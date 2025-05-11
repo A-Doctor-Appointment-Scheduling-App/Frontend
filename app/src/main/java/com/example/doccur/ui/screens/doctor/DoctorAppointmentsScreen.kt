@@ -77,112 +77,109 @@ fun DoctorAppointmentsScreen(appointmentList: List<Appointment>) {
         } else {
             LazyColumn {
                 items(appointmentList) { appointment ->
-                    AppointmentCard(
-                        time = appointment.time,
-                        patientName = "${appointment.patient.firstName} ${appointment.patient.lastName}",
-                        appointmentType = appointment.status,
-                        status = appointment.status,
-                        statusColor = when (appointment.status) {
-                            "Confirmed" -> Color(0xFFDFFFE2)
-                            "Available" -> Color(0xFFE8F5E9)
-                            "New Appt" -> Color(0xFFE3F2FD)
-                            else -> Color(0xFFEEEEEE)
-                        },
-                        profileImage = R.drawable.woman // Just a placeholder
-                    )
+                    if (appointment.status.equals("Available", ignoreCase = true)) {
+                        // Show simplified card for available slot
+                        AppointmentCard(
+                            time = appointment.time,
+                            patientName = null,
+                            appointmentType = null,
+                            status = "Available",
+                            statusColor = Color(0xFFE8F5E9), // light green for availability
+                            profileImage = null
+                        )
+                    } else {
+                        // Show detailed card for booked appointment
+                        val statusColor = when (appointment.status) {
+                            "Scheduled" -> Color(0xFFFFF59D) // light yellow
+                            "Confirmed" -> Color(0xFFC8E6C9) // light green
+                            "Completed" -> Color(0xFFBBDEFB) // light blue
+                            "Cancelled" -> Color(0xFFE0E0E0) // grey
+                            else -> Color(0xFFFFFFFF)        // default white
+                        }
+
+                        AppointmentCard(
+                            time = appointment.time,
+                            patientName = "${appointment.patient.firstName} ${appointment.patient.lastName}",
+                            appointmentType = appointment.status,
+                            status = appointment.status,
+                            statusColor = statusColor,
+                            profileImage = R.drawable.woman // Use dynamic image if available
+                        )
+                    }
+
                 }
             }
         }
     }
 }
-
 @Composable
 fun AppointmentCard(
     time: String,
-    patientName: String,
-    appointmentType: String,
+    patientName: String?,
+    appointmentType: String?,
     status: String,
     statusColor: Color,
-    profileImage: Int
+    profileImage: Int?
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        elevation = 2.dp,
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
+    if (status.lowercase() == "available") {
+        // Show green "Available" bar
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = Color.White)
+                .padding(vertical = 8.dp)
+                .background(color = Color(0xFFDFFFE2), shape = RoundedCornerShape(12.dp))
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Time and status row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = time.take(5), // Display only hours and minutes
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    modifier = Modifier.weight(1f)
-                )
-
-                Text(
-                    text = status,
-                    fontSize = 14.sp,
-                    color = Color.DarkGray,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-            }
-
-            // Divider
-            Divider(
-                color = Color.LightGray.copy(alpha = 0.5f),
-                thickness = 1.dp,
-                modifier = Modifier.padding(horizontal = 16.dp)
+            Text(
+                text = "$time - Available",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                color = Color(0xFF2E7D32) // dark green
             )
-
-            // Patient info
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = painterResource(id = profileImage),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .padding(end = 12.dp)
-                )
-
-                Column {
-                    Text(
-                        text = patientName,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp
-                    )
-                    Text(
-                        text = appointmentType,
-                        fontSize = 14.sp,
-                        color = Color.Gray
-                    )
+        }
+    } else {
+        // Regular appointment card with details
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+                .background(color = statusColor, shape = RoundedCornerShape(12.dp))
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = time, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (profileImage != null) {
+                        Image(
+                            painter = painterResource(id = profileImage),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .padding(end = 8.dp)
+                        )
+                    }
+                    Column {
+                        Text(text = patientName ?: "", fontWeight = FontWeight.SemiBold)
+                        Text(text = appointmentType ?: "", fontSize = 12.sp, color = Color.Gray)
+                    }
                 }
             }
 
-            // Status indicator at bottom
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(4.dp)
-                    .background(color = statusColor)
-            )
+            Surface(
+                color = if (status == "Confirmed") Color(0xFFB2D6FF) else Color(0xFFAAFFBD),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Text(
+                    text = status,
+                    fontSize = 12.sp,
+                    color = Color.Black,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
         }
     }
 }

@@ -21,8 +21,11 @@ class DoctorViewModel : ViewModel() {
     private fun loadAppointments() {
         viewModelScope.launch {
             val doctor = Doctor(id = 1, firstName = "Sarah", lastName = "Benali")
-            val patient1 = Patient(id = 10, firstName = "Sarah", lastName = "Arabi")
-            val patient2 = Patient(id = 11, firstName = "Samir", lastName = "Haddad")
+            val patient1 = Patient(id = 10, firstName = "Manel", lastName = "Arabi")
+            val patient2 = Patient(id = 11, firstName = "Taous", lastName = "Haddad")
+            val patient3 = Patient(id =12, firstName = "Lina", lastName = "Haddad")
+            val patient4 = Patient(id = 13, firstName = "Lyna", lastName = "Haddad")
+            val patient5 = Patient(id = 14, firstName = "Serine", lastName = "Haddad")
 
             val dummyData = listOf(
                 Appointment(
@@ -49,9 +52,43 @@ class DoctorViewModel : ViewModel() {
                     patient = patient2,
                     date = "2025-03-17",
                     time = "10:00:00",
-                    status = "New Appt",
+                    status = "Scheduled",
                     qrCodeUrl = null
-                )
+                ), Appointment(
+                        id = 4,
+                doctor = doctor,
+                patient = patient3,
+                date = "2025-03-17",
+                time = "10:30:00",
+                status = "Confirmed",
+                qrCodeUrl = null
+            ),
+            Appointment(
+                id = 5,
+                doctor = doctor,
+                patient = patient4,
+                date = "2025-03-17",
+                time = "11:00:00",
+                status = "Cancelled",
+                qrCodeUrl = null
+            ),
+            Appointment(
+                id = 6,
+                doctor = doctor,
+                patient = patient5,
+                date = "2025-03-17",
+                time = "11:30:00",
+                status = "Scheduled",
+                qrCodeUrl = null
+            ), Appointment(
+                    id = 2,
+                    doctor = doctor,
+                    patient = Patient(id = 0, firstName = "", lastName = ""), // Empty for available slot
+                    date = "2025-03-17",
+                    time = "12:30:00",
+                    status = "Available",
+                    qrCodeUrl = null
+                ),
             )
 
             _appointments.value = dummyData
