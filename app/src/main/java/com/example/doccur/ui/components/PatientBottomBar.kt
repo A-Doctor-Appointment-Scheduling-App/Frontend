@@ -29,7 +29,8 @@ import com.example.doccur.ui.theme.Inter
 fun PatientBottomBar(navController: NavController) {
     val items = listOf(
         PatientScreen.Home,
-        PatientScreen.Notifications
+        PatientScreen.Notifications,
+        PatientScreen.PatientAppointments
     )
 
     Column {

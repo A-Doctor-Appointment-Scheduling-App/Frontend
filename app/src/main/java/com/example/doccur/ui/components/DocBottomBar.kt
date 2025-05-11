@@ -31,7 +31,7 @@ import com.example.doccur.ui.theme.Inter
 fun DocBottomBar(navController: NavController) {
     val items = listOf(
         DoctorScreen.Home,
-        DoctorScreen.Appointements,
+        DoctorScreen.DoctorAppointments,
         DoctorScreen.Patients,
         DoctorScreen.Notifications,
         DoctorScreen.Profile,

@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(repository: NotificationRepository) {
     val navController = rememberNavController()
-    val userType = "patient"
+    val userType = "doctor"
 
     if (userType === "patient"){
         Scaffold(
