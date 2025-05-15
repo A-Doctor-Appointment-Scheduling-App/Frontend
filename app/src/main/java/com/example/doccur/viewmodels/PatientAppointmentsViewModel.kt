@@ -24,8 +24,14 @@ class PatientAppointmentsViewModel : ViewModel() {
 
             _appointments.value = listOf(
                 Appointment(1, doctor, patient, "2025-05-20", "14:00:00", "Confirmed", null),
-                Appointment(2, doctor, patient, "2025-05-22", "10:00:00", "Pending", null)
-            )
+                Appointment(2, doctor, patient, "2025-05-22", "10:00:00", "Pending", null),
+
+                Appointment(2, doctor, patient, "2025-05-10", "10:00:00", "Complete", null),
+                Appointment(1, doctor, patient, "2025-05-10", "10:00:00", "Cancelled", null),
+
+                Appointment(1, doctor, patient, "2025-05-10", "10:00:00", "Complete", null)
+
+                )
         }
     }
 }

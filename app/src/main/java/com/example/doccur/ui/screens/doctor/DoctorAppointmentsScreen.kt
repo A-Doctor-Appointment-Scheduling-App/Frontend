@@ -8,30 +8,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Surface
-import androidx.compose.material.Tab
-import androidx.compose.material.TabRow
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,61 +22,64 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import coil.compose.rememberImagePainter
 import com.example.doccur.R
 import com.example.doccur.entities.Appointment
-import com.example.doccur.ui.screens.patient.AppointmentCard
-import com.example.doccur.viewmodel.DoctorViewModel
-// DoctorAppointmentsScreen.kt
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
-import java.time.format.DateTimeFormatter
+import org.threeten.bp.LocalDate
+import org.threeten.bp.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DoctorAppointmentsScreen(appointmentList: List<Appointment>) {
+    var currentDate by remember { mutableStateOf(LocalDate.now()) }
+    val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
+
+    val filteredAppointments = appointmentList.filter {
+        it.date == currentDate.toString()
+    }
+
     Column(modifier = Modifier.padding(16.dp)) {
-        // Header with date
-        Text(
-            text = "Appointment Calendar",
-            style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        // Header with date navigation
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            IconButton(onClick = { currentDate = currentDate.minusDays(1) }) {
+                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Previous Day")
+            }
+            Text(
+                text = currentDate.format(formatter),
+                style = MaterialTheme.typography.h6,
+                fontWeight = FontWeight.Bold
+            )
+            IconButton(onClick = { currentDate = currentDate.plusDays(1) }) {
+                Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "Next Day")
+            }
+        }
 
-        // Date display
-        Text(
-            text = "<17 March 2025>",
-            style = MaterialTheme.typography.subtitle1,
-            color = Color.Gray,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Spacer(modifier = Modifier.height(16.dp))
 
-        if (appointmentList.isEmpty()) {
-            Text("No appointments for today.")
+        if (filteredAppointments.isEmpty()) {
+            Text("No appointments for this day.")
         } else {
             LazyColumn {
-                items(appointmentList) { appointment ->
+                items(filteredAppointments) { appointment ->
                     if (appointment.status.equals("Available", ignoreCase = true)) {
-                        // Show simplified card for available slot
                         AppointmentCard(
                             time = appointment.time,
                             patientName = null,
                             appointmentType = null,
                             status = "Available",
-                            statusColor = Color(0xFFE8F5E9), // light green for availability
+                            statusColor = Color(0xFFE8F5E9),
                             profileImage = null
                         )
                     } else {
-                        // Show detailed card for booked appointment
                         val statusColor = when (appointment.status) {
-                            "Scheduled" -> Color(0xFFFFF59D) // light yellow
-                            "Confirmed" -> Color(0xFFC8E6C9) // light green
-                            "Completed" -> Color(0xFFBBDEFB) // light blue
-                            "Cancelled" -> Color(0xFFE0E0E0) // grey
-                            else -> Color(0xFFFFFFFF)        // default white
+                            "Scheduled" -> Color(0xFFFFF59D)
+                            "Confirmed" -> Color(0xFFC8E6C9)
+                            "Completed" -> Color(0xFFBBDEFB)
+                            "Cancelled" -> Color(0xFFE0E0E0)
+                            else -> Color.White
                         }
 
                         AppointmentCard(
@@ -103,15 +88,15 @@ fun DoctorAppointmentsScreen(appointmentList: List<Appointment>) {
                             appointmentType = appointment.status,
                             status = appointment.status,
                             statusColor = statusColor,
-                            profileImage = R.drawable.woman // Use dynamic image if available
+                            profileImage = R.drawable.woman
                         )
                     }
-
                 }
             }
         }
     }
 }
+
 @Composable
 fun AppointmentCard(
     time: String,
@@ -122,7 +107,6 @@ fun AppointmentCard(
     profileImage: Int?
 ) {
     if (status.lowercase() == "available") {
-        // Show green "Available" bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -135,11 +119,10 @@ fun AppointmentCard(
                 text = "$time - Available",
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
-                color = Color(0xFF2E7D32) // dark green
+                color = Color(0xFF2E7D32)
             )
         }
     } else {
-        // Regular appointment card with details
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -169,7 +152,13 @@ fun AppointmentCard(
             }
 
             Surface(
-                color = if (status == "Confirmed") Color(0xFFB2D6FF) else Color(0xFFAAFFBD),
+                color = when (status) {
+                    "Confirmed" -> Color(0xFFB2D6FF)
+                    "Scheduled" -> Color(0xFFFFFF99)
+                    "Completed" -> Color(0xFF90CAF9)
+                    "Cancelled" -> Color(0xFFBDBDBD)
+                    else -> Color.LightGray
+                },
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.padding(start = 8.dp)
             ) {

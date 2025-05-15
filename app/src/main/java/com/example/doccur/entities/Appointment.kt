@@ -2,8 +2,8 @@ package com.example.doccur.entities
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import org.threeten.bp.LocalDate
+import org.threeten.bp.format.DateTimeFormatter
 import java.util.Locale
 
 data class Appointment(
@@ -16,43 +16,20 @@ data class Appointment(
     val qrCodeUrl: String? = null
 ) {
     val day: String
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            try {
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
-                LocalDate.parse(date, formatter).dayOfMonth.toString()
-            } catch (e: Exception) {
-                "-"
-            }
-        } else {
+        get() = try {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
+            LocalDate.parse(date, formatter).dayOfMonth.toString()
+        } catch (e: Exception) {
             "-"
         }
+
 
     val month: String
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            try {
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
-                LocalDate.parse(date, formatter).month.name.lowercase()
-            } catch (e: Exception) {
-                "-"
-            }
-        } else {
+        get() = try {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
+            LocalDate.parse(date, formatter).month.name.lowercase()
+        } catch (e: Exception) {
             "-"
         }
-}
 
-data class Doctor(
-    val id: Int,
-    val firstName: String,
-    val lastName: String,
-    val specialty: String? = null,        // Optional if not used now
-    val profileImage: String? = null      // Full URL to image if available
-) {
-    val fullName: String
-        get() = "Dr. $firstName $lastName"
 }
-
-data class Patient(
-    val id: Int,
-    val firstName: String,
-    val lastName: String
-)

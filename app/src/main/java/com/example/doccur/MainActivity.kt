@@ -17,12 +17,13 @@ import com.example.doccur.repositories.NotificationRepository
 import com.example.doccur.ui.components.DocBottomBar
 import com.example.doccur.ui.components.PatientBottomBar
 import com.example.doccur.ui.theme.DoccurTheme
+import com.jakewharton.threetenabp.AndroidThreeTen
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        AndroidThreeTen.init(this)
         // Create repository and view model factory
         val repository = NotificationRepository(RetrofitClient.apiService)
 
@@ -39,7 +40,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(repository: NotificationRepository) {
     val navController = rememberNavController()
-    val userType = "doctor"
+    val userType = "patient"
 
     if (userType === "patient"){
         Scaffold(

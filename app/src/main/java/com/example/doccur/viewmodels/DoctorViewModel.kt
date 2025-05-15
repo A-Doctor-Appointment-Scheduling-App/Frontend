@@ -32,7 +32,7 @@ class DoctorViewModel : ViewModel() {
                     id = 1,
                     doctor = doctor,
                     patient = patient1,
-                    date = "2025-03-17",
+                    date = "2025-05-12",
                     time = "09:00:00",
                     status = "Confirmed",
                     qrCodeUrl = "https://example.com/qr/1.png"
@@ -41,7 +41,7 @@ class DoctorViewModel : ViewModel() {
                     id = 2,
                     doctor = doctor,
                     patient = Patient(id = 0, firstName = "", lastName = ""), // Empty for available slot
-                    date = "2025-03-17",
+                    date = "2025-05-10",
                     time = "09:30:00",
                     status = "Available",
                     qrCodeUrl = null
@@ -50,7 +50,7 @@ class DoctorViewModel : ViewModel() {
                     id = 3,
                     doctor = doctor,
                     patient = patient2,
-                    date = "2025-03-17",
+                    date = "2025-05-10",
                     time = "10:00:00",
                     status = "Scheduled",
                     qrCodeUrl = null
@@ -58,7 +58,7 @@ class DoctorViewModel : ViewModel() {
                         id = 4,
                 doctor = doctor,
                 patient = patient3,
-                date = "2025-03-17",
+                date = "2025-05-12",
                 time = "10:30:00",
                 status = "Confirmed",
                 qrCodeUrl = null
@@ -67,7 +67,7 @@ class DoctorViewModel : ViewModel() {
                 id = 5,
                 doctor = doctor,
                 patient = patient4,
-                date = "2025-03-17",
+                date = "2025-05-13",
                 time = "11:00:00",
                 status = "Cancelled",
                 qrCodeUrl = null
@@ -76,7 +76,7 @@ class DoctorViewModel : ViewModel() {
                 id = 6,
                 doctor = doctor,
                 patient = patient5,
-                date = "2025-03-17",
+                date = "2025-05-11",
                 time = "11:30:00",
                 status = "Scheduled",
                 qrCodeUrl = null
@@ -84,9 +84,57 @@ class DoctorViewModel : ViewModel() {
                     id = 2,
                     doctor = doctor,
                     patient = Patient(id = 0, firstName = "", lastName = ""), // Empty for available slot
-                    date = "2025-03-17",
+                    date = "2025-03-10",
                     time = "12:30:00",
                     status = "Available",
+                    qrCodeUrl = null
+                ),
+
+
+
+
+                Appointment(
+                    id = 1,
+                    doctor = doctor,
+                    patient = patient1,
+                    date = "2025-05-11",
+                    time = "09:00:00",
+                    status = "Confirmed",
+                    qrCodeUrl = "https://example.com/qr/1.png"
+                ),
+                Appointment(
+                    id = 2,
+                    doctor = doctor,
+                    patient = Patient(id = 0, firstName = "", lastName = ""), // Empty for available slot
+                    date = "2025-05-11",
+                    time = "09:30:00",
+                    status = "Available",
+                    qrCodeUrl = null
+                ),
+                Appointment(
+                    id = 3,
+                    doctor = doctor,
+                    patient = patient2,
+                    date = "2025-05-11",
+                    time = "10:00:00",
+                    status = "Scheduled",
+                    qrCodeUrl = null
+                ), Appointment(
+                    id = 4,
+                    doctor = doctor,
+                    patient = patient3,
+                    date = "2025-05-11",
+                    time = "10:30:00",
+                    status = "Confirmed",
+                    qrCodeUrl = null
+                ),
+                Appointment(
+                    id = 5,
+                    doctor = doctor,
+                    patient = patient4,
+                    date = "2025-05-11",
+                    time = "11:00:00",
+                    status = "Cancelled",
                     qrCodeUrl = null
                 ),
             )
