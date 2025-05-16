@@ -7,14 +7,14 @@ import org.threeten.bp.format.DateTimeFormatter
 import java.util.Locale
 
 data class Appointment(
-    val id: Int,
-    val doctor: Doctor,
-    val patient: Patient,
-    val date: String, // Format: "YYYY-MM-DD"
-    val time: String, // Format: "HH:MM:SS"
+    val doctor_id: Int,
+    val patient_id: Int,
+    val date: String,
+    val time: String,
     val status: String,
-    val qrCodeUrl: String? = null
-) {
+    val qr_code: String
+)
+ {
     val day: String
         get() = try {
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())

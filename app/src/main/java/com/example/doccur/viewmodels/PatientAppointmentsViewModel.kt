@@ -1,37 +1,58 @@
 package com.example.doccur.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 
 import androidx.lifecycle.viewModelScope
+import com.example.doccur.api.RetrofitClient
 import com.example.doccur.entities.Appointment
+import com.example.doccur.entities.AppointmentResponse
+import com.example.doccur.entities.AppointmentWithDoctor
 import com.example.doccur.entities.Doctor
 import com.example.doccur.entities.Patient
+import com.example.doccur.repositories.PatientAppointmentRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+
 class PatientAppointmentsViewModel : ViewModel() {
-    private val _appointments = MutableStateFlow<List<Appointment>>(emptyList())
-    val appointments: StateFlow<List<Appointment>> = _appointments
 
-    init {
-        loadAppointments()
-    }
+    private val repository = PatientAppointmentRepository(RetrofitClient.apiService)
 
-    private fun loadAppointments() {
+    private val _appointments = MutableStateFlow<List<AppointmentWithDoctor>>(emptyList())
+    val appointments: StateFlow<List<AppointmentWithDoctor>> = _appointments
+
+    fun fetchAppointments(patientId: Int) {
+        Log.d("PatientAppointmentsVM", "Fetching appointments for patientId = $patientId")
         viewModelScope.launch {
-            val doctor = Doctor(id = 7, firstName = "Karim", lastName = "Brahimi")
-            val patient = Patient(id = 2, firstName = "Yasmine", lastName = "Dali")
+            try {
+                val rawAppointments = repository.getAppointmentsForPatient(patientId)
+                Log.d("PatientAppointmentsVM", "Fetched ${rawAppointments.size} appointments")
 
-            _appointments.value = listOf(
-                Appointment(1, doctor, patient, "2025-05-20", "14:00:00", "Confirmed", null),
-                Appointment(2, doctor, patient, "2025-05-22", "10:00:00", "Pending", null),
+                val fullAppointments = rawAppointments.mapNotNull { appointment ->
+                    try {
+                        val doctorResponse = RetrofitClient.apiService.getDoctorById(appointment.doctor_id)
+                        if (doctorResponse.isSuccessful) {
+                            val doctor = doctorResponse.body()
+                            doctor?.let {
+                                AppointmentWithDoctor(appointment, it)
+                            }
+                        } else {
+                            null
+                        }
+                    } catch (e: Exception) {
+                        Log.e("PatientAppointmentsVM", "Error fetching doctor: ${e.message}")
+                        null
+                    }
+                }
 
-                Appointment(2, doctor, patient, "2025-05-10", "10:00:00", "Complete", null),
-                Appointment(1, doctor, patient, "2025-05-10", "10:00:00", "Cancelled", null),
+                _appointments.value = fullAppointments
 
-                Appointment(1, doctor, patient, "2025-05-10", "10:00:00", "Complete", null)
-
-                )
+            } catch (e: Exception) {
+                Log.e("PatientAppointmentsVM", "Error fetching appointments: ${e.message}")
+            }
         }
     }
 }
+
+

@@ -21,7 +21,7 @@ import com.example.doccur.ui.screens.doctor.DoctorAppointmentsScreen
 import com.example.doccur.ui.screens.doctor.HomeScreen
 import com.example.doccur.ui.screens.doctor.PatientsScreen
 import com.example.doccur.ui.screens.doctor.ProfileScreen
-import com.example.doccur.viewmodel.DoctorViewModel
+import com.example.doccur.viewmodels.DoctorViewModel
 import com.example.doccur.viewmodels.NotificationViewModel
 import com.example.doccur.viewmodels.NotificationViewModelFactory
 
@@ -43,9 +43,8 @@ fun DocNavGraph(
             HomeScreen()
         }
         composable(DoctorScreen.DoctorAppointments.route) {
-            val viewModel: DoctorViewModel = viewModel()
-            val appointments by viewModel.appointments.collectAsState()
-            DoctorAppointmentsScreen(appointmentList = appointments)
+            DoctorAppointmentsScreen()
+
         }
 
 

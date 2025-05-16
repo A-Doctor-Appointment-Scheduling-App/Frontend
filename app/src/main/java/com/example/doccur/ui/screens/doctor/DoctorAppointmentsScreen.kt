@@ -4,7 +4,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,18 +21,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.doccur.R
-import com.example.doccur.entities.Appointment
+import com.example.doccur.viewmodels.DoctorViewModel
 import org.threeten.bp.LocalDate
 import org.threeten.bp.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun DoctorAppointmentsScreen(appointmentList: List<Appointment>) {
+fun DoctorAppointmentsScreen(viewModel: DoctorViewModel = viewModel()) {
     var currentDate by remember { mutableStateOf(LocalDate.now()) }
     val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
+    val appointments by viewModel.appointments.collectAsState()
 
-    val filteredAppointments = appointmentList.filter {
+    val filteredAppointments = appointments.filter {
         it.date == currentDate.toString()
     }
 
@@ -49,8 +50,7 @@ fun DoctorAppointmentsScreen(appointmentList: List<Appointment>) {
             }
             Text(
                 text = currentDate.format(formatter),
-                style = MaterialTheme.typography.h6,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.h6
             )
             IconButton(onClick = { currentDate = currentDate.plusDays(1) }) {
                 Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "Next Day")
@@ -82,17 +82,18 @@ fun DoctorAppointmentsScreen(appointmentList: List<Appointment>) {
                             else -> Color.White
                         }
 
-                        AppointmentCard(
+                        /*AppointmentCard(
                             time = appointment.time,
-                            patientName = "${appointment.patient.firstName} ${appointment.patient.lastName}",
+                            patientName = "${appointment.patient?.firstName ?: ""} ${appointment.patient?.lastName ?: ""}",
                             appointmentType = appointment.status,
                             status = appointment.status,
                             statusColor = statusColor,
                             profileImage = R.drawable.woman
-                        )
+                        )*/
                     }
                 }
             }
+
         }
     }
 }
@@ -111,7 +112,7 @@ fun AppointmentCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
-                .background(color = Color(0xFFDFFFE2), shape = RoundedCornerShape(12.dp))
+                .background(color = statusColor, shape = RoundedCornerShape(12.dp))
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -152,13 +153,7 @@ fun AppointmentCard(
             }
 
             Surface(
-                color = when (status) {
-                    "Confirmed" -> Color(0xFFB2D6FF)
-                    "Scheduled" -> Color(0xFFFFFF99)
-                    "Completed" -> Color(0xFF90CAF9)
-                    "Cancelled" -> Color(0xFFBDBDBD)
-                    else -> Color.LightGray
-                },
+                color = statusColor,
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.padding(start = 8.dp)
             ) {
