@@ -2,6 +2,7 @@ package com.example.doccur.ui.screens.patient
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.doccur.R
 import com.example.doccur.entities.Appointment
@@ -31,26 +33,34 @@ import org.threeten.bp.LocalDate
 import org.threeten.bp.format.DateTimeFormatter
 
 enum class AppointmentTab { UPCOMING, PREVIOUS, CANCELLED }
-
 @Composable
 fun PatientAppointmentsScreen(patientId: Int) {
     val viewModel: PatientAppointmentsViewModel = viewModel()
     val appointments by viewModel.appointments.collectAsState()
+
+    // State for selected tab
+    var selectedTab by remember { mutableStateOf(AppointmentTab.UPCOMING) }
+    // State for dialog
+    var selectedAppointment by remember { mutableStateOf<AppointmentWithDoctor?>(null) }
 
     LaunchedEffect(Unit) {
         println("🚀 PatientAppointmentsScreen loaded for patientId = $patientId")
         viewModel.fetchAppointments(patientId)
     }
 
-
-    var selectedTab by remember { mutableStateOf(AppointmentTab.UPCOMING) }
+    // Show dialog if an appointment is selected
+    selectedAppointment?.let { appointment ->
+        AppointmentDetailsDialog(
+            appointmentWithDoctor = appointment,
+            onDismiss = { selectedAppointment = null }
+        )
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
         Text("My Appointments", style = MaterialTheme.typography.h5)
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -86,8 +96,8 @@ fun PatientAppointmentsScreen(patientId: Int) {
             AppointmentTab.CANCELLED -> appointments.filter {
                 it.appointment.status.lowercase() == "cancelled"
             }
+            else -> emptyList() // Add this to make when exhaustive
         }
-
 
         if (filteredAppointments.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -96,27 +106,29 @@ fun PatientAppointmentsScreen(patientId: Int) {
         } else {
             LazyColumn {
                 items(filteredAppointments) { appointmentWithDoctor ->
-                    AppointmentCard(appointmentWithDoctor)
+                    AppointmentCard(
+                        appointmentWithDoctor = appointmentWithDoctor,
+                        onClick = { selectedAppointment = appointmentWithDoctor }
+                    )
                 }
             }
         }
     }
 }
-
 @Composable
-fun AppointmentCard(appointmentWithDoctor: AppointmentWithDoctor) {
+fun AppointmentCard(
+    appointmentWithDoctor: AppointmentWithDoctor,
+    onClick: () -> Unit
+) {
     val appointment = appointmentWithDoctor.appointment
     val doctor = appointmentWithDoctor.doctor
-    LaunchedEffect(Unit) {
-        println("🧠 AppointmentCard loaded:")
-        println("📅 Appointment ID: ${appointment.doctor_id}")
-        println("👨‍⚕️ Doctor fetched: $doctor")
-        println("👨‍⚕️ Doctor Name: ${doctor.firstName} ${doctor.lastName}")
-    }
+
     Card(
         shape = RoundedCornerShape(20.dp),
         elevation = 8.dp,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick) // Add clickable modifier
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -204,4 +216,82 @@ fun AppointmentCard(appointmentWithDoctor: AppointmentWithDoctor) {
     }
 }
 
+@Composable
+fun AppointmentDetailsDialog(
+    appointmentWithDoctor: AppointmentWithDoctor,
+    onDismiss: () -> Unit
+) {
+    val appointment = appointmentWithDoctor.appointment
+    val doctor = appointmentWithDoctor.doctor
 
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                // Header
+                Text("Appointment Details", style = MaterialTheme.typography.h6)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Doctor Info
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(id = R.drawable.doctorwoman),
+                        contentDescription = "Doctor",
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text("Dr. ${doctor.firstName} ${doctor.lastName}",
+                            fontWeight = FontWeight.Bold)
+                        Text(doctor.specialty ?: "Specialty not available")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Appointment Time
+                Text("Appointment Time", fontWeight = FontWeight.Bold)
+                Text("${appointment.date} at ${appointment.time}")
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Location
+                Text("Location", fontWeight = FontWeight.Bold)
+                Text("City Hospital, Block A")
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Status
+                Text(
+                    text = "Status: ${appointment.status}",
+                    color = when(appointment.status.lowercase()) {
+                        "confirmed" -> Color.Green
+                        "cancelled" -> Color.Red
+                        else -> Color.Gray
+                    },
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Close Button
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = MaterialTheme.colors.primary
+                    )
+                ) {
+                    Text("Close", color = Color.White)
+                }
+            }
+        }
+    }
+}
