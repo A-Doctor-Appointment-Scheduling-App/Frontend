@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -41,7 +42,17 @@ android {
 }
 
 dependencies {
-
+    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
+    implementation ("com.google.code.gson:gson:2.10.1")
+    implementation ("com.squareup.okhttp3:okhttp:4.10.0")
+    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation ("com.google.firebase:firebase-messaging-ktx")
+    implementation ("com.google.firebase:firebase-analytics-ktx")
+    implementation ("androidx.compose.material3:material3:1.1.2") // or latest version
+    implementation ("androidx.compose.ui:ui:1.5.1")
+    implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
+    implementation ("androidx.activity:activity-compose:1.7.2")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -74,6 +85,9 @@ dependencies {
     implementation ("androidx.activity:activity-compose:1.7.2")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
     implementation ("androidx.compose.material:material-icons-extended:1.5.0")
+    implementation ("io.coil-kt:coil-compose:2.4.0") // For image loading
+    implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
+
 
 
 }

@@ -2,6 +2,9 @@ package com.example.doccur.navigation
 
 
 
+import AppointementsScreen
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AppsOutage
 import androidx.compose.material.icons.filled.CalendarToday
@@ -14,14 +17,22 @@ import androidx.compose.ui.graphics.BlendMode.Companion.Screen
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.example.doccur.repositories.AppointmentRepository
+import com.example.doccur.repositories.HomeRepository
 import com.example.doccur.repositories.NotificationRepository
-import com.example.doccur.ui.screens.doctor.HomeScreen
 import com.example.doccur.ui.screens.NotificationsScreen
-import com.example.doccur.ui.screens.doctor.AppointementsScreen
+import com.example.doccur.ui.screens.doctor.AppointmentDetailsScreen
+import com.example.doccur.ui.screens.doctor.DoctorHomeScreen
 import com.example.doccur.ui.screens.doctor.PatientsScreen
 import com.example.doccur.ui.screens.doctor.ProfileScreen
+import com.example.doccur.viewmodels.AppointmentViewModel
+import com.example.doccur.viewmodels.AppointmentViewModelFactory
+import com.example.doccur.viewmodels.HomeViewModel
+import com.example.doccur.viewmodels.HomeViewModelFactory
 import com.example.doccur.viewmodels.NotificationViewModel
 import com.example.doccur.viewmodels.NotificationViewModelFactory
 
@@ -29,6 +40,13 @@ import com.example.doccur.viewmodels.NotificationViewModelFactory
 sealed class DoctorScreen(val route: String, val title: String, val icon: ImageVector) {
     object Home : DoctorScreen("home", "Home", Icons.Filled.Home)
     object Appointements : DoctorScreen("appointements", "Appointements", Icons.Filled.CalendarToday)
+    object AppointmentDetails : DoctorScreen(
+        "appointmentDetails/{appointmentId}",
+        "Appointment Details",
+        Icons.Filled.CalendarToday
+    ) {
+        fun createRoute(appointmentId: Int) = "appointmentDetails/$appointmentId"
+    }
     object Patients : DoctorScreen("patients", "Patients", Icons.Filled.Person)
     object Notifications : DoctorScreen("notifications", "Notifications", Icons.Filled.Notifications)
     object Profile : DoctorScreen("profile", "Profile", Icons.Filled.MedicalServices)
@@ -36,33 +54,61 @@ sealed class DoctorScreen(val route: String, val title: String, val icon: ImageV
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DocNavGraph(
     navController: NavHostController,
-    repository: NotificationRepository
+    notificationRepository: NotificationRepository,
+    homeRepository: HomeRepository,
+    appointmentRepository: AppointmentRepository
 ) {
+
+    val homeViewModel: HomeViewModel = viewModel(
+        factory = HomeViewModelFactory(homeRepository)
+    )
+
+    val notificationViewModel: NotificationViewModel = viewModel(
+        factory = NotificationViewModelFactory(notificationRepository)
+    )
+
+    val appointmentViewModel: AppointmentViewModel = viewModel(
+        factory = AppointmentViewModelFactory(appointmentRepository)
+    )
+
     NavHost(navController, startDestination = DoctorScreen.Home.route) {
         composable(DoctorScreen.Home.route) {
-            HomeScreen()
+            val userId = 1
+            DoctorHomeScreen(
+                viewModel = homeViewModel,
+                userId = userId)
         }
 
         composable(DoctorScreen.Appointements.route) {
-            AppointementsScreen()
+            AppointementsScreen(navController = navController,appointmentViewModel)
         }
+
+        composable(
+            route = DoctorScreen.AppointmentDetails.route,
+            arguments = listOf(navArgument("appointmentId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val appointmentId = backStackEntry.arguments?.getInt("appointmentId") ?: return@composable
+            AppointmentDetailsScreen(
+                appointmentId = appointmentId,
+                viewModel = appointmentViewModel,
+                navController = navController
+            )
+        }
+
 
         composable(DoctorScreen.Patients.route) {
             PatientsScreen()
         }
 
         composable(DoctorScreen.Notifications.route) {
-            val viewModel: NotificationViewModel = viewModel(
-                factory = NotificationViewModelFactory(repository)
-            )
-
-            val userId = 6
+            val userId = 1
 
             NotificationsScreen(
-                viewModel = viewModel,
+                viewModel = notificationViewModel,
                 userId = userId,
                 userType = "doctor"
             )

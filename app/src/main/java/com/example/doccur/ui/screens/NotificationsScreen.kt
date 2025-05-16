@@ -2,6 +2,7 @@ package com.example.doccur.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -50,11 +51,18 @@ fun NotificationsScreen(
     val isLoading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
 
-
-
     // Effect to fetch notifications when the screen is displayed
+    // and connect to WebSocket
     LaunchedEffect(key1 = userId, key2 = userType) {
         viewModel.fetchNotifications(userId, userType)
+        // La connexion WebSocket est maintenant gérée dans fetchNotifications()
+    }
+
+    // Effet pour déconnecter le WebSocket lors de la destruction
+    DisposableEffect(key1 = Unit) {
+        onDispose {
+            viewModel.disconnectWebSocket()
+        }
     }
 
     CompositionLocalProvider(
@@ -162,28 +170,16 @@ fun NotificationsScreen(
                                         Pair(Icons.Default.Notifications, Color(0xFFE3E3E3))
                                 }
 
-                                // Determine timeAgo text based on createdAt (in a real app, this would be calculated)
-                                val timeAgo = when {
-                                    notification.message?.contains(
-                                        "tomorrow",
-                                        ignoreCase = true
-                                    ) == true -> "2 hours ago"
-
-                                    notification.message?.contains(
-                                        "pickup",
-                                        ignoreCase = true
-                                    ) == true -> "Yesterday"
-
-                                    else -> "2 days ago"
-                                }
-
+                                // Determine timeAgo text based on createdAt
+                                //val timeAgo = formatTimeAgo(notification.createdAt)
 
                                 NotificationItem(
                                     notification = notification,
                                     icon = icon,
                                     iconColor = iconBackgroundColor,
-                                    timeAgo = timeAgo,
-                                    isUnread = !notification.isRead
+                                    //timeAgo = timeAgo,
+                                    isUnread = !notification.isRead,
+                                    onClick = { viewModel.markAsRead(notification.id) }
                                 )
                             }
                         }
@@ -194,13 +190,36 @@ fun NotificationsScreen(
     }
 }
 
+// Fonction pour formater le temps écoulé
+//private fun formatTimeAgo(dateTimeStr: String): String {
+//    return try {
+//        val instant = Instant.parse(dateTimeStr)
+//        val now = Instant.now()
+//        val duration = Duration.between(instant, now)
+//
+//        when {
+//            duration.toMinutes() < 1 -> "Just now"
+//            duration.toMinutes() < 60 -> "${duration.toMinutes()} minutes ago"
+//            duration.toHours() < 24 -> "${duration.toHours()} hours ago"
+//            duration.toDays() < 30 -> "${duration.toDays()} days ago"
+//            else -> {
+//                val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
+//                    .withZone(ZoneId.systemDefault())
+//                formatter.format(instant)
+//            }
+//        }
+//    } catch (e: Exception) {
+//        "Unknown time"
+//    }
+//}
+
 @Composable
 fun NotificationItem(
     notification: Notification,
     icon: ImageVector,
     iconColor: Color,
-    timeAgo: String,
-    isUnread: Boolean
+    isUnread: Boolean,
+    onClick: () -> Unit
 ) {
 
     CompositionLocalProvider(
@@ -210,6 +229,7 @@ fun NotificationItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clickable(onClick = onClick)  // Ajouter cette ligne pour gérer les clics
         ) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -217,7 +237,7 @@ fun NotificationItem(
                 backgroundColor = Color.White,
                 border = BorderStroke(0.2.dp, AppColors.LightGray),
 
-            ) {
+                ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -237,6 +257,18 @@ fun NotificationItem(
 
                     // Notification content
                     Column(modifier = Modifier.weight(1f)) {
+                        // Ajout du titre de la notification
+                        notification.title?.let { title ->
+                            Text(
+                                text = title,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.Black
+                            )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
+
                         Text(
                             text = notification.message ?: "No message available",
                             fontSize = 16.sp,
@@ -246,11 +278,6 @@ fun NotificationItem(
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        Text(
-                            text = timeAgo,
-                            fontSize = 14.sp,
-                            color = Color.Gray
-                        )
                     }
 
                     // Unread indicator
