@@ -1,5 +1,6 @@
 package com.example.doccur.repository
 
+import android.util.Log
 import com.example.doccur.api.ApiService
 import com.example.doccur.model.CreatePrescriptionRequest
 import com.example.doccur.model.Medication
@@ -20,7 +21,10 @@ class PrescriptionRepository(private val apiService: ApiService) {
                     appointment = appointmentId,
                     medications = medications
                 )
+                Log.d("requst in repo","requst in repo$request")
                 val response = apiService.createPrescription(request)
+                Log.d("response in repo","response in repo$response")
+
                 if (response.isSuccessful) {
                     Resource.Success(response.body()!!)
                 } else {
@@ -46,6 +50,26 @@ class PrescriptionRepository(private val apiService: ApiService) {
             }
         }
     }
+    suspend fun downloadPrescriptionPdf(prescriptionId: Int): Resource<ByteArray> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.downloadPrescriptionPdf(prescriptionId)
+                if (response.isSuccessful) {
+                    val pdfBytes = response.body()?.bytes()
+                    if (pdfBytes != null) {
+                        Resource.Success(pdfBytes)
+                    } else {
+                        Resource.Error("Failed to download prescription PDF: Invalid response")
+                    }
+                } else {
+                    Resource.Error("Failed to download prescription PDF: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Resource.Error("Failed to download prescription PDF: ${e.message}")
+            }
+        }
+    }
+
 
     suspend fun getPrescriptionsByDoctorAndPatient(
         doctorId: Int,

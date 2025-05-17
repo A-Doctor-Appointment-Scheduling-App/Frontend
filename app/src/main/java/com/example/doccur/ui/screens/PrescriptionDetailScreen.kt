@@ -1,5 +1,9 @@
 package com.example.doccur.ui.screens
 
+import android.content.Context
+import android.os.Environment
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,6 +29,8 @@ import com.example.doccur.ui.theme.CardShape
 import com.example.doccur.ui.theme.LightGray
 import com.example.doccur.util.Resource
 import com.example.doccur.viewmodel.PrescriptionViewModel
+import java.io.File
+import java.io.FileOutputStream
 
 @Composable
 fun PrescriptionDetailScreen(
@@ -33,12 +40,24 @@ fun PrescriptionDetailScreen(
     onDownloadClick: (Int) -> Unit
 ) {
     val prescriptionState by viewModel.prescriptionState.collectAsState()
+    val downloadState by viewModel.downloadPrescriptionState.collectAsState()
+    val context = LocalContext.current
     val scrollState = rememberScrollState()
-    
+
     LaunchedEffect(prescriptionId) {
         viewModel.getPrescription(prescriptionId)
     }
-    
+
+    LaunchedEffect(downloadState) {
+        if (downloadState is Resource.Success) {
+            Log.d("succes download ","succes download ")
+            val pdfBytes = (downloadState as Resource.Success<ByteArray>).data
+            Log.d("downloadState ","downloadState $pdfBytes")
+
+            savePdfToDownloads(context, pdfBytes, "prescription_$prescriptionId.pdf")
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -49,7 +68,7 @@ fun PrescriptionDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { onDownloadClick(prescriptionId) }) {
+                    IconButton(onClick = { viewModel.downloadPrescriptionPdf(prescriptionId) }) {
                         Icon(Icons.Default.Download, contentDescription = "Download PDF")
                     }
                 }
@@ -65,14 +84,14 @@ fun PrescriptionDetailScreen(
                 is Resource.Loading -> {
                     LoadingIndicator()
                 }
-                
+
                 is Resource.Error -> {
                     ErrorMessage(
                         message = (prescriptionState as Resource.Error).message,
                         onRetry = { viewModel.getPrescription(prescriptionId) }
                     )
                 }
-                
+
                 is Resource.Success -> {
                     val prescription = (prescriptionState as Resource.Success<Prescription>).data
                     PrescriptionContent(prescription = prescription, scrollState = scrollState)
@@ -81,6 +100,21 @@ fun PrescriptionDetailScreen(
         }
     }
 }
+
+fun savePdfToDownloads(context: Context, pdfBytes: ByteArray, fileName: String) {
+    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+    val file = File(downloadsDir, fileName)
+
+    try {
+        FileOutputStream(file).use { outputStream ->
+            outputStream.write(pdfBytes)
+        }
+        Toast.makeText(context, "PDF saved to Downloads", Toast.LENGTH_SHORT).show()
+    } catch (e: Exception) {
+        Toast.makeText(context, "Failed to save PDF: ${e.message}", Toast.LENGTH_SHORT).show()
+    }
+}
+
 
 @Composable
 fun PrescriptionContent(prescription: Prescription, scrollState: androidx.compose.foundation.ScrollState) {

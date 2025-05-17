@@ -1,15 +1,16 @@
 package com.example.doccur.api
 
 import com.example.doccur.model.*
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
     // Authentication endpoints
-    @POST("users/login/")
+    @POST("login/")
     suspend fun login(@Body loginRequest: LoginRequest): Response<LoginResponse>
 
-    @POST("users/patient/register/")
+    @POST("patient/register/")
     suspend fun registerPatient(@Body request: PatientRegistrationRequest): Response<RegistrationResponse>
 
     // Doctor endpoints
@@ -30,15 +31,15 @@ interface ApiService {
     @POST("prescriptions/create/")
     suspend fun createPrescription(@Body request: CreatePrescriptionRequest): Response<Prescription>
 
-    @GET("prescriptions/prescriptions/{prescriptionId}/")
+    @GET("prescriptions/{prescriptionId}/")
     suspend fun getPrescription(@Path("prescriptionId") prescriptionId: Int): Response<Prescription>
 
-    @GET("prescriptions/prescriptions/doctor/{doctorId}/patient/{patientId}/")
+    @GET("prescriptions/doctor/{doctorId}/patient/{patientId}/")
     suspend fun getPrescriptionsByDoctorAndPatient(
         @Path("doctorId") doctorId: Int,
         @Path("patientId") patientId: Int
     ): Response<List<Prescription>>
 
-    @GET("prescriptions/prescriptions/{prescriptionId}/download/")
-    suspend fun downloadPrescriptionPdf(@Path("prescriptionId") prescriptionId: Int): Response<Any>
+    @GET("prescriptions/{prescriptionId}/download/")
+    suspend fun downloadPrescriptionPdf(@Path("prescriptionId") prescriptionId: Int): Response<ResponseBody>
 }

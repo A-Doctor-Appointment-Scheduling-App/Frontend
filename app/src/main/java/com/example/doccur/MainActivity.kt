@@ -31,13 +31,14 @@ import com.example.doccur.viewmodel.PrescriptionViewModel
 import com.example.doccur.viewmodel.PrescriptionViewModelFactory
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
         // Initialize TokenManager and RetrofitClient
         val tokenManager = TokenManager(this)
-        RetrofitClient.initialize(tokenManager)
-        
+//        RetrofitClient.initialize(tokenManager)
+
         setContent {
             DocCurTheme {
                 Surface(
@@ -128,8 +129,7 @@ fun DocCurApp(
                     navController.navigate("prescriptions/create")
                 },
                 onBackClick = {
-                    // In a real app, this would go back to a main menu
-                    // For now, just show a toast
+
                     Toast.makeText(context, "This would go back to main menu", Toast.LENGTH_SHORT).show()
                 }
             )

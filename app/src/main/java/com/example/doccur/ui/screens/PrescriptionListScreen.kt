@@ -38,7 +38,7 @@ fun PrescriptionListScreen(
     // In a real app, we would load the actual doctor/patient ID
     // For now, using a placeholder for the API call
     val doctorId = if (isDoctor) userId else 6
-    val patientId = if (!isDoctor) userId else 5
+    val patientId = if (!isDoctor) userId else 1
     
     LaunchedEffect(doctorId, patientId) {
         viewModel.getPrescriptionsByDoctorAndPatient(doctorId, patientId)
