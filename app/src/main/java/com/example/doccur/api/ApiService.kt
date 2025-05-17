@@ -24,9 +24,11 @@ interface ApiService {
     @GET("users/patients/")
     suspend fun getPatients(): Response<List<Patient>>
 
-    @GET("users/patients/{patientId}/")
+    @GET("patients/{patientId}/")
     suspend fun getPatientDetails(@Path("patientId") patientId: Int): Response<Patient>
 
+    @GET("prescriptions/patient/{patient_id}/prescriptions/")
+    suspend fun getPatientPrescriptions(@Path("patient_id") patientId: Int): Response<List<Prescription>>
     // Prescription endpoints
     @POST("prescriptions/create/")
     suspend fun createPrescription(@Body request: CreatePrescriptionRequest): Response<Prescription>

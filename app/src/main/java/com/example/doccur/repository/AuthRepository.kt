@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.doccur.api.ApiService
 import com.example.doccur.model.LoginRequest
 import com.example.doccur.model.LoginResponse
+import com.example.doccur.model.Patient
 import com.example.doccur.model.PatientRegistrationRequest
 import com.example.doccur.model.RegistrationResponse
 import com.example.doccur.util.Resource
@@ -28,7 +29,20 @@ class AuthRepository(private val apiService: ApiService) {
             }
         }
     }
-
+    suspend fun getPatientDetails(patientId: Int): Resource<Patient> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.getPatientDetails(patientId) // Make sure this matches your Retrofit call
+                if (response.isSuccessful) {
+                    Resource.Success(response.body()!!)
+                } else {
+                    Resource.Error("Failed to get patient: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Resource.Error("Failed to get patient: ${e.message}")
+            }
+        }
+    }
     suspend fun registerPatient(
         firstName: String,
         lastName: String,

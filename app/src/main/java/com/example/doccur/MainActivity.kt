@@ -82,7 +82,7 @@ fun DocCurApp(
     
     // Define the starting destination based on authentication status
     val startDestination = if (tokenManager.isLoggedIn()) {
-        "home"
+        "prescriptions_patient"
     } else {
         "login"
     }
@@ -131,8 +131,10 @@ fun DocCurApp(
                 onBackClick = {
 
                     Toast.makeText(context, "This would go back to main menu", Toast.LENGTH_SHORT).show()
-                }
-            )
+                },
+                authViewModel = authViewModel,
+
+                )
         }
         
         // Prescription detail screen
@@ -164,6 +166,19 @@ fun DocCurApp(
                         popUpTo("prescriptions") { inclusive = true }
                     }
                 }
+            )
+        }
+        composable("prescriptions_patient") {
+            PatientPrescriptionsScreen(
+                viewModel = prescriptionViewModel,
+                tokenManager = tokenManager,
+                onPrescriptionClick = { prescriptionId ->
+                    navController.navigate("prescriptions/$prescriptionId")
+                },
+                onBackClick = {
+
+                    Toast.makeText(context, "This would go back to main menu", Toast.LENGTH_SHORT).show()
+                },
             )
         }
     }

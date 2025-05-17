@@ -69,6 +69,16 @@ class PrescriptionViewModel(private val repository: PrescriptionRepository) : Vi
         }
     }
 
+
+    private val _patientPrescriptionsState = MutableStateFlow<Resource<List<Prescription>>>(Resource.Loading)
+    val patientPrescriptionsState: StateFlow<Resource<List<Prescription>>> = _patientPrescriptionsState
+
+    fun getPatientPrescriptions(patientId: Int) {
+        viewModelScope.launch {
+            _patientPrescriptionsState.value = Resource.Loading
+            _patientPrescriptionsState.value = repository.getPatientPrescriptions(patientId)
+        }
+    }
     fun getPrescriptionsByDoctorAndPatient(doctorId: Int, patientId: Int) {
         viewModelScope.launch {
             _prescriptionsListState.value = Resource.Loading

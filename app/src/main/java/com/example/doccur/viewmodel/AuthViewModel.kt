@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.auth0.jwt.JWT
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.example.doccur.model.LoginResponse
+import com.example.doccur.model.Patient
 import com.example.doccur.model.RegistrationResponse
 import com.example.doccur.repository.AuthRepository
 import com.example.doccur.util.Resource
@@ -72,6 +73,17 @@ class AuthViewModel(
         tokenManager.clearTokens()
         _loginState.value = Resource.Loading
     }
+
+    private val _patientState = MutableStateFlow<Resource<Patient>>(Resource.Loading)
+    val patientState: StateFlow<Resource<Patient>> = _patientState
+
+    fun getPatient(patientId: Int) {
+        viewModelScope.launch {
+            _patientState.value = Resource.Loading
+            _patientState.value = repository.getPatientDetails(patientId)
+        }
+    }
+
 
     fun isLoggedIn(): Boolean = tokenManager.isLoggedIn()
 

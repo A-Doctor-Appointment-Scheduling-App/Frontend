@@ -88,4 +88,20 @@ class PrescriptionRepository(private val apiService: ApiService) {
             }
         }
     }
+
+
+    suspend fun getPatientPrescriptions(patientId: Int): Resource<List<Prescription>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.getPatientPrescriptions(patientId)
+                if (response.isSuccessful) {
+                    Resource.Success(response.body()!!)
+                } else {
+                    Resource.Error("Failed to fetch prescriptions: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Resource.Error("Failed to fetch prescriptions: ${e.message}")
+            }
+        }
+    }
 }
