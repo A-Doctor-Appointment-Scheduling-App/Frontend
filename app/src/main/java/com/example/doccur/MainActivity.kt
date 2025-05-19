@@ -82,7 +82,11 @@ fun DocCurApp(
     
     // Define the starting destination based on authentication status
     val startDestination = if (tokenManager.isLoggedIn()) {
-        "prescriptions_patient"
+        if(tokenManager.isDoctor()){
+            "prescriptions"
+        }else {
+            "prescriptions_patient"
+        }
     } else {
         "login"
     }
@@ -113,7 +117,14 @@ fun DocCurApp(
         composable("home") {
             // For this demo, we'll just redirect to the prescription list
             LaunchedEffect(Unit) {
-                navController.navigate("prescriptions")
+
+
+                    if(tokenManager.isDoctor()){
+                        navController.navigate("prescriptions")
+                    }else {
+                        navController.navigate("prescriptions_patient")
+                    }
+
             }
         }
         

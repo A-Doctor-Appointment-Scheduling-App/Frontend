@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.244.132:8000/" // Use 10.0.2.2 for Android emulator to access localhost
+    private const val BASE_URL = "http://192.168.51.132:8000/" // Use 10.0.2.2 for Android emulator to access localhost
 //    private var tokenManager: TokenManager? = null
 //
 //    fun initialize(tokenManager: TokenManager) {

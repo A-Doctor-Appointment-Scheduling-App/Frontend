@@ -42,6 +42,10 @@ interface ApiService {
         @Path("patientId") patientId: Int
     ): Response<List<Prescription>>
 
+
+    @POST("login/google/")
+    suspend fun loginWithGoogle(@Body idToken: Map<String, String>): Response<LoginResponse>
+
     @GET("prescriptions/{prescriptionId}/download/")
     suspend fun downloadPrescriptionPdf(@Path("prescriptionId") prescriptionId: Int): Response<ResponseBody>
 }

@@ -43,6 +43,25 @@ class AuthRepository(private val apiService: ApiService) {
             }
         }
     }
+
+    suspend fun loginWithGoogle(idToken: String): Resource<LoginResponse> {
+        return withContext(Dispatchers.IO) {
+            try {
+                Log.d("idToken in repo ","idToken in repo :$idToken")
+
+                val response = apiService.loginWithGoogle(mapOf("id_token" to idToken))
+                Log.d("response lyoum ytir rass  ","response lyoum ytir rass  :$response")
+
+                if (response.isSuccessful) {
+                    Resource.Success(response.body()!!)
+                } else {
+                    Resource.Error("Google login failed: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Resource.Error("Google login failed: ${e.message}")
+            }
+        }
+    }
     suspend fun registerPatient(
         firstName: String,
         lastName: String,

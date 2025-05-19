@@ -43,6 +43,23 @@ class AuthViewModel(
         }
     }
 
+
+    fun loginWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _loginState.value = Resource.Loading
+            Log.d("in model view idToken"," in model view idToken:$idToken")
+
+            val result = repository.loginWithGoogle(idToken)
+            Log.d("result repo","result repo:$result")
+
+            _loginState.value = result
+            if (result is Resource.Success) {
+                tokenManager.saveTokens(result.data.access, result.data.refresh)
+                tokenManager.saveUserInfo(result.data.role, getUserIdFromJwt(result.data.access))
+            }
+        }
+    }
+
     fun registerPatient(
         firstName: String,
         lastName: String,

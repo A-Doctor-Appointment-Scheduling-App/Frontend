@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.example.doccur.ui.components.DocCurButton
 import com.example.doccur.ui.components.DocCurPasswordField
 import com.example.doccur.ui.components.DocCurTextField
+import com.example.doccur.ui.components.GoogleLoginButton
 import com.example.doccur.ui.components.LoadingIndicator
 import com.example.doccur.ui.theme.Blue
 import com.example.doccur.util.Resource
@@ -330,6 +331,10 @@ fun RegisterScreen(
                         Text("Login")
                     }
                 }
+                GoogleLoginButton(
+                    viewModel = viewModel,
+                    onLoginSuccess = onRegisterSuccess // ou onRegisterSuccess
+                )
                 
                 Spacer(modifier = Modifier.height(16.dp))
             }
