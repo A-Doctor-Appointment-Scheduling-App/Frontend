@@ -3,6 +3,7 @@ package com.example.doccur.api
 import com.example.doccur.entities.Appointment
 import com.example.doccur.entities.AppointmentResponse
 import com.example.doccur.entities.Doctor
+import com.example.doccur.entities.Doctorr
 import com.example.doccur.entities.Notification
 import com.example.doccur.entities.Patient
 import retrofit2.Response
@@ -31,6 +32,10 @@ interface ApiService {
     suspend fun getPatientById(@Path("id") id: Int): Response<Patient>
     @GET("appointments/doctor/{doctor_id}/appointments/")
     suspend fun getDoctorAppointments(@Path("doctor_id") doctorId: Int): Response<List<Appointment>>
+
+    @GET("doctors/{doctor_id}/")
+    suspend fun getDoctorDetails(
+        @Path("doctor_id") doctorId: Int): Response<Doctorr>
 
 }
 
