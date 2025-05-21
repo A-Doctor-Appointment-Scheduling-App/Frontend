@@ -54,7 +54,7 @@ fun MainScreen(repository: NotificationRepository) {
     val patientId = sessionViewModel.patientId.value
 
     // Choose between "patient" and "doctor" based on app state, login, etc.
-    val userType = "doctor" // Replace this with a dynamic value when needed
+    val userType = "patient" // Replace this with a dynamic value when needed
 
     if (userType == "patient") {
         if (patientId != null) {

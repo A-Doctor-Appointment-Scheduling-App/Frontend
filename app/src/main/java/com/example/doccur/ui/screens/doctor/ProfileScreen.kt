@@ -1,5 +1,6 @@
 package com.example.doccur.ui.screens.doctor
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,23 +20,34 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Facebook
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import com.example.doccur.R
 import com.example.doccur.entities.Doctorr
 import com.example.doccur.viewmodels.DoctorViewModelFactory
 import com.example.doccur.viewmodels.DoctorrViewModel
+import com.example.doccur.api.RetrofitClient.BASE_URL
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
+import androidx.compose.material3.Surface
+import androidx.compose.ui.platform.LocalContext
+
 
 @Composable
 fun ProfileScreen(
@@ -46,7 +58,6 @@ fun ProfileScreen(
     LaunchedEffect(Unit) {
         viewModel.getDoctorDetails(doctorId)
     }
-
 
     Column {
         if (viewModel.isLoading) {
@@ -63,6 +74,8 @@ fun ProfileScreen(
 
 @Composable
 fun DoctorProfileDetails(doctor: Doctorr) {
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -70,27 +83,26 @@ fun DoctorProfileDetails(doctor: Doctorr) {
     ) {
         // Photo et nom
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (doctor.photo_url != null) {
+            Surface(
+                modifier = Modifier
+                    .size(120.dp)
+                    .padding(4.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colors.surface,
+                shadowElevation = 4.dp
+            ) {
                 AsyncImage(
-                    model = doctor.photo_url,
-                    contentDescription = "Doctor photo",
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(BASE_URL + doctor.photo_url)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Doctor profile photo",
                     modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
+                        .fillMaxSize()
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop,
+
                 )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                        .background(Color.LightGray),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "${doctor.first_name.first()}${doctor.last_name.first()}",
-                        style = MaterialTheme.typography.h4
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -142,16 +154,63 @@ fun DoctorProfileDetails(doctor: Doctorr) {
         Spacer(modifier = Modifier.height(8.dp))
 
         Row {
-            doctor.facebook_link?.let {
-                IconButton(onClick = { /* Ouvrir le lien */ }) {
-                    Icon(imageVector = Icons.Default.Facebook, contentDescription = "Facebook")
-                }
+            doctor.facebook_link?.let { link ->
+                SocialMediaIcon(
+                    iconRes = R.drawable.ic_facebook,
+                    onClick = { openSocialMediaLink(link, context) },
+                    contentDescription = "Facebook"
+                )
             }
-            // Ajoutez les autres réseaux sociaux de la même manière
+            doctor.instagram_link?.let { link ->
+                SocialMediaIcon(
+                    iconRes = R.drawable.ic_instagram,
+                    onClick = { openSocialMediaLink(link, context) },
+                    contentDescription = "Instagram"
+                )
+            }
+            doctor.twitter_link?.let { link ->
+                SocialMediaIcon(
+                    iconRes = R.drawable.twitter,
+                    onClick = { openSocialMediaLink(link, context) },
+                    contentDescription = "Twitter"
+                )
+            }
+            doctor.linkedin_link?.let { link ->
+                SocialMediaIcon(
+                    iconRes = R.drawable.linkedin,
+                    onClick = { openSocialMediaLink(link, context) },
+                    contentDescription = "LinkedIn"
+                )
+            }
         }
     }
 }
 
+private fun openSocialMediaLink(url: String, context: android.content.Context) {
+    try {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        // Handle case where no browser is available
+        // You could show a toast message here if you want
+    }
+}
+
+@Composable
+fun SocialMediaIcon(
+    iconRes: Int,
+    onClick: () -> Unit,
+    contentDescription: String
+) {
+    val context = LocalContext.current
+    IconButton(onClick = onClick) {
+        Image(
+            painter = painterResource(id = iconRes),
+            contentDescription = contentDescription,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
 @Composable
 fun InfoRow(icon: ImageVector, text: String) {
     Row(
