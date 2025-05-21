@@ -2,7 +2,6 @@ package com.example.doccur.navigation
 
 
 
-import AppointementsScreen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.material.icons.Icons
@@ -28,6 +27,7 @@ import com.example.doccur.repositories.NotificationRepository
 import com.example.doccur.repositories.ProfileRepository
 import com.example.doccur.ui.screens.NotificationsScreen
 import com.example.doccur.ui.screens.doctor.AppointmentDetailsScreen
+import com.example.doccur.ui.screens.doctor.AppointmentsScreen
 import com.example.doccur.ui.screens.doctor.DoctorHomeScreen
 import com.example.doccur.ui.screens.doctor.ProfileScreen
 import com.example.doccur.viewmodels.AppointmentViewModel
@@ -94,7 +94,11 @@ fun DocNavGraph(
         }
 
         composable(DoctorScreen.Appointements.route) {
-            AppointementsScreen(navController = navController,appointmentViewModel)
+            val doctorId = 1
+            AppointmentsScreen(
+                navController = navController,
+                appointmentViewModel,doctorId
+            )
         }
 
         composable(
@@ -105,7 +109,6 @@ fun DocNavGraph(
             AppointmentDetailsScreen(
                 appointmentId = appointmentId,
                 viewModel = appointmentViewModel,
-                navController = navController
             )
         }
 

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.doccur.api.ApiResponse
 import com.example.doccur.entities.AppointmentDetailsResponse
+import com.example.doccur.entities.AppointmentResponse
 import com.example.doccur.repositories.AppointmentRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,6 +12,9 @@ import kotlinx.coroutines.launch
 import retrofit2.Response
 
 class AppointmentViewModel(private val repository: AppointmentRepository) : ViewModel() {
+
+    private val _appointments = MutableStateFlow<List<AppointmentResponse>>(emptyList())
+    val appointments: StateFlow<List<AppointmentResponse>> = _appointments
 
     private val _appointmentDetails = MutableStateFlow<AppointmentDetailsResponse?>(null)
     val appointmentDetails: StateFlow<AppointmentDetailsResponse?> = _appointmentDetails
@@ -23,6 +27,23 @@ class AppointmentViewModel(private val repository: AppointmentRepository) : View
 
     private val _confirmationMessage = MutableStateFlow<String?>(null)
     val confirmationMessage: StateFlow<String?> = _confirmationMessage
+
+
+    fun fetchAppointmentsForDoctor(doctorId: Int) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+
+            try {
+                val result = repository.getFullAppointmentsForDoctor(doctorId)
+                _appointments.value = result
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
 
     fun fetchAppointmentDetails(appointmentId: Int) {
         viewModelScope.launch {

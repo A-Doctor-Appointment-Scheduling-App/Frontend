@@ -40,7 +40,6 @@ import com.journeyapps.barcodescanner.ScanOptions
 fun AppointmentDetailsScreen(
     appointmentId: Int,
     viewModel: AppointmentViewModel,
-    navController: NavController
 ) {
     val details by viewModel.appointmentDetails.collectAsStateWithLifecycle()
     val loading by viewModel.loading.collectAsStateWithLifecycle()

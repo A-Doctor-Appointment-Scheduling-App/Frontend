@@ -63,17 +63,14 @@ interface ApiService {
         @Path("appointment_id") appointmentId: Int
     ): Response<ApiResponse>
 
-    @GET("appointments/patient/{id}/appointments")
-    suspend fun getAppointmentsByPatient(@Path("id") patientId: Int): List<AppointmentResponse>
-
-    @GET("patients/{id}/")
-    suspend fun getPatientById(@Path("id") id: Int): Response<Patient>
-    @GET("appointments/doctor/{doctor_id}/appointments/")
-    suspend fun getDoctorAppointments(@Path("doctor_id") doctorId: Int): Response<List<Appointment>>
-
     @GET("doctors/{doctor_id}/")
     suspend fun getDoctorDetails(
         @Path("doctor_id") doctorId: Int): Response<DoctorProfile>
+
+    @GET("appointments/doctor/{doctor_id}/appointments/full/")
+    suspend fun getFullAppointmentsByDoctor(
+        @Path("doctor_id") doctorId: Int
+    ): List<AppointmentResponse>
 }
 
 

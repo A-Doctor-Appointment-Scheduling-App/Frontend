@@ -4,6 +4,7 @@ import com.example.doccur.api.ApiResponse
 import com.example.doccur.api.ApiService
 import com.example.doccur.api.RejectReasonRequest
 import com.example.doccur.entities.AppointmentDetailsResponse
+import com.example.doccur.entities.AppointmentResponse
 import com.example.doccur.entities.ConfirmAppointmentResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,6 +20,15 @@ class AppointmentRepository(private val apiService: ApiService) {
             } else {
                 throw Exception("API error: ${response.code()} - ${response.message()}")
             }
+        }
+    }
+
+    suspend fun getFullAppointmentsForDoctor(doctorId: Int): List<AppointmentResponse> {
+        return try {
+            val response = apiService.getFullAppointmentsByDoctor(doctorId)
+            response
+        } catch (e: Exception) {
+            emptyList()
         }
     }
 
