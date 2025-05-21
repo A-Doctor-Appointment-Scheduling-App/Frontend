@@ -14,42 +14,45 @@ import com.example.doccur.repositories.PatientAppointmentRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-
 class PatientAppointmentsViewModel : ViewModel() {
-
     private val repository = PatientAppointmentRepository(RetrofitClient.apiService)
 
     private val _appointments = MutableStateFlow<List<AppointmentWithDoctor>>(emptyList())
+    private val _isLoading = MutableStateFlow(false)
+    private val _error = MutableStateFlow<String?>(null)
+
     val appointments: StateFlow<List<AppointmentWithDoctor>> = _appointments
+    val isLoading: StateFlow<Boolean> = _isLoading
+    val error: StateFlow<String?> = _error
 
     fun fetchAppointments(patientId: Int) {
-        Log.d("PatientAppointmentsVM", "Fetching appointments for patientId = $patientId")
         viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+
             try {
-                val rawAppointments = repository.getAppointmentsForPatient(patientId)
-                Log.d("PatientAppointmentsVM", "Fetched ${rawAppointments.size} appointments")
+                val rawAppointments = repository.getFullAppointmentsForPatient(patientId)
 
                 val fullAppointments = rawAppointments.mapNotNull { appointment ->
                     try {
                         val doctorResponse = RetrofitClient.apiService.getDoctorById(appointment.doctor_id)
                         if (doctorResponse.isSuccessful) {
-                            val doctor = doctorResponse.body()
-                            doctor?.let {
-                                AppointmentWithDoctor(appointment, it)
+                            doctorResponse.body()?.let { doctor ->
+                                AppointmentWithDoctor(appointment, doctor)
                             }
                         } else {
                             null
                         }
                     } catch (e: Exception) {
-                        Log.e("PatientAppointmentsVM", "Error fetching doctor: ${e.message}")
                         null
                     }
                 }
 
                 _appointments.value = fullAppointments
-
             } catch (e: Exception) {
-                Log.e("PatientAppointmentsVM", "Error fetching appointments: ${e.message}")
+                _error.value = "Failed to load appointments: ${e.message}"
+            } finally {
+                _isLoading.value = false
             }
         }
     }

@@ -33,3 +33,8 @@ data class Appointment(
         }
 
 }
+
+data class AppointmentWithPatient(
+    val appointment: AppointmentResponse,
+    val patient: Patient
+)

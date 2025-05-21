@@ -58,6 +58,8 @@ dependencies {
     implementation("androidx.compose.material:material:1.5.0")
     implementation("androidx.compose.ui:ui-tooling-preview:1.5.0")
     implementation("androidx.compose.material:material-icons-extended:1.5.0")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.6.0")
+    implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
 
     // Navigation
     implementation(libs.androidx.navigation.common.android)

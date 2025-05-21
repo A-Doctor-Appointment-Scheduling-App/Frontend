@@ -32,6 +32,13 @@ interface ApiService {
     @GET("appointments/doctor/{doctor_id}/appointments/")
     suspend fun getDoctorAppointments(@Path("doctor_id") doctorId: Int): Response<List<Appointment>>
 
+    @GET("appointments/patient/{patient_id}/appointments/full/")
+    suspend fun getFullAppointmentsByPatient(@Path("patient_id") patientId: Int): List<AppointmentResponse>
+
+    @GET("appointments/doctor/{doctor_id}/appointments/full/")
+    suspend fun getFullAppointmentsByDoctor(
+        @Path("doctor_id") doctorId: Int
+    ): List<AppointmentResponse>
 }
 
 data class NotificationsResponse(
