@@ -1,10 +1,13 @@
 package com.example.doccur.repositories
 
+import android.util.Log
 import com.example.doccur.api.ApiResponse
 import com.example.doccur.api.ApiService
 import com.example.doccur.api.RejectReasonRequest
 import com.example.doccur.entities.AppointmentDetailsResponse
+import com.example.doccur.entities.AppointmentPatient
 import com.example.doccur.entities.AppointmentResponse
+import com.example.doccur.entities.CancelAppointmentResponse
 import com.example.doccur.entities.ConfirmAppointmentResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -31,6 +34,16 @@ class AppointmentRepository(private val apiService: ApiService) {
             emptyList()
         }
     }
+
+    suspend fun getFullAppointmentsForPatient(patientId: Int): List<AppointmentPatient> {
+        val response = apiService.getFullAppointmentsByPatient(patientId)
+        response.forEachIndexed { index, appointment ->
+            Log.d("Repository", "Appointment #$index: $appointment")
+        }
+        return response
+    }
+
+
 
 
     suspend fun getAppointmentDetails(appointmentId: Int): AppointmentDetailsResponse {
@@ -66,5 +79,15 @@ class AppointmentRepository(private val apiService: ApiService) {
         }
     }
 
+    suspend fun cancelAppointment(appointmentId: Int): CancelAppointmentResponse {
+        return withContext(Dispatchers.IO) {
+            val response = apiService.cancelAppointment(appointmentId)
+            if (response.isSuccessful) {
+                response.body() ?: throw Exception("Empty response body")
+            } else {
+                throw Exception("API error: ${response.code()} - ${response.message()}")
+            }
+        }
+    }
 
 }

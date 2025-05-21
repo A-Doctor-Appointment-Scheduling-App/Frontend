@@ -3,8 +3,11 @@ package com.example.doccur.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.doccur.api.ApiResponse
+import com.example.doccur.api.RetrofitClient
 import com.example.doccur.entities.AppointmentDetailsResponse
+import com.example.doccur.entities.AppointmentPatient
 import com.example.doccur.entities.AppointmentResponse
+import com.example.doccur.entities.AppointmentWithDoctor
 import com.example.doccur.repositories.AppointmentRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +18,9 @@ class AppointmentViewModel(private val repository: AppointmentRepository) : View
 
     private val _appointments = MutableStateFlow<List<AppointmentResponse>>(emptyList())
     val appointments: StateFlow<List<AppointmentResponse>> = _appointments
+
+    private val _appointmentsForPatient = MutableStateFlow<List<AppointmentPatient>>(emptyList())
+    val appointmentsForPatient: StateFlow<List<AppointmentPatient>> = _appointmentsForPatient
 
     private val _appointmentDetails = MutableStateFlow<AppointmentDetailsResponse?>(null)
     val appointmentDetails: StateFlow<AppointmentDetailsResponse?> = _appointmentDetails
@@ -27,6 +33,9 @@ class AppointmentViewModel(private val repository: AppointmentRepository) : View
 
     private val _confirmationMessage = MutableStateFlow<String?>(null)
     val confirmationMessage: StateFlow<String?> = _confirmationMessage
+
+    private val _cancelMessage = MutableStateFlow<String?>(null)
+    val cancelMessage: StateFlow<String?> = _cancelMessage
 
 
     fun fetchAppointmentsForDoctor(doctorId: Int) {
@@ -44,6 +53,24 @@ class AppointmentViewModel(private val repository: AppointmentRepository) : View
             }
         }
     }
+
+    fun fetchAppointmentsForPatient(patientId: Int) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+
+            try {
+                val result = repository.getFullAppointmentsForPatient(patientId)
+                _appointmentsForPatient.value = result
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+
 
     fun fetchAppointmentDetails(appointmentId: Int) {
         viewModelScope.launch {
@@ -92,6 +119,25 @@ class AppointmentViewModel(private val repository: AppointmentRepository) : View
         }
     }
 
+    fun cancelAppointment(appointmentId: Int, patientId: Int) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            _cancelMessage.value = null
+
+            try {
+                val response = repository.cancelAppointment(appointmentId)
+                _cancelMessage.value = response.message
+
+                // After successful cancellation, refresh the appointments list
+                fetchAppointmentsForPatient(patientId)
+            } catch (e: Exception) {
+                _error.value = e.message
+                _loading.value = false // Make sure loading is set to false in case of error
+            }
+            // Note: we don't set loading to false here as fetchAppointmentsForPatient will handle that
+        }
+    }
 
     fun scanQrCode(appointmentId: Int) {
         viewModelScope.launch {
@@ -113,6 +159,14 @@ class AppointmentViewModel(private val repository: AppointmentRepository) : View
 
     fun clearConfirmationMessage() {
         _confirmationMessage.value = null
+    }
+
+    fun clearCancelMessage() {
+        _cancelMessage.value = null
+    }
+
+    fun clearError() {
+        _error.value = null
     }
 
 }

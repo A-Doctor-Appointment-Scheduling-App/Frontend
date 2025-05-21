@@ -103,7 +103,7 @@ fun MainScreen(
             }
         ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
-                PatientNavGraph(navController, notificationRepository, homeRepository,usersRepository)
+                PatientNavGraph(navController, notificationRepository, homeRepository,usersRepository,appointmentRepository)
             }
         }
     } else if (userType == "doctor") { // Changed from === to ==

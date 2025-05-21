@@ -2,7 +2,9 @@ package com.example.doccur.api
 
 import com.example.doccur.entities.Appointment
 import com.example.doccur.entities.AppointmentDetailsResponse
+import com.example.doccur.entities.AppointmentPatient
 import com.example.doccur.entities.AppointmentResponse
+import com.example.doccur.entities.CancelAppointmentResponse
 import com.example.doccur.entities.ConfirmAppointmentResponse
 import com.example.doccur.entities.Doctor
 import com.example.doccur.entities.Doctor2
@@ -60,6 +62,11 @@ interface ApiService {
         @Body reasonBody: RejectReasonRequest
     ): Response<ConfirmAppointmentResponse>
 
+    @POST("appointments/{appointment_id}/cancel/")
+    suspend fun cancelAppointment(
+        @Path("appointment_id") appointmentId: Int,
+    ): Response<CancelAppointmentResponse>
+
     @POST("appointments/scan/{appointment_id}/")
     suspend fun scanQrCode(
         @Path("appointment_id") appointmentId: Int
@@ -74,12 +81,17 @@ interface ApiService {
         @Path("doctor_id") doctorId: Int
     ): List<AppointmentResponse>
 
+    @GET("appointments/patient/{patient_id}/appointments/full/")
+    suspend fun getFullAppointmentsByPatient(@Path("patient_id") patientId: Int): List<AppointmentPatient>
+
     //List of doctors
     @GET("doctors/")
     suspend fun getDoctors(): Response<List<Doctor2>>
 
     @GET("doctors/{id}/")
     suspend fun getDoctorDetails(@Path("id") doctorId: Int): Response<DoctorDetails>
+
+
 }
 
 

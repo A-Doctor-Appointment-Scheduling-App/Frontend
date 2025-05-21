@@ -31,8 +31,10 @@ fun PatientBottomBar(navController: NavController) {
     val items = listOf(
         PatientScreen.Home,
         PatientScreen.DoctorList,
+        PatientScreen.Appointments,
         PatientScreen.Notifications,
-    )
+
+        )
 
     Column {
 

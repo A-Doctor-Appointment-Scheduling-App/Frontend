@@ -38,6 +38,10 @@ data class ConfirmAppointmentResponse(
     val qr_data: QrData
 )
 
+data class CancelAppointmentResponse(
+    val message: String,
+)
+
 data class QrData(
     val appointment_id: Int,
     val doctor: String,
@@ -71,3 +75,22 @@ data class AppointmentWithDoctor(
 )
 
 
+data class AppointmentPatient(
+    val id: Int,
+    val date: String,
+    val time: String,
+    val status: String,
+    @SerializedName("qr_code")
+    val qrCode: String?,
+    val doctor: DoctorData,
+    val patient: PatientData
+)
+
+data class DoctorData(
+    val id: Int,
+    @SerializedName("full_name")
+    val fullName: String,
+    val speciality: String,
+    @SerializedName("profile_image")
+    val profileImage: String,
+    )

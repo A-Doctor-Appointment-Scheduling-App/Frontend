@@ -5,6 +5,7 @@ import PatientHomeScreen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Notifications
@@ -16,12 +17,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.doccur.repositories.AppointmentRepository
 import com.example.doccur.repositories.HomeRepository
 import com.example.doccur.repositories.NotificationRepository
 import com.example.doccur.repositories.UsersRepository
 import com.example.doccur.ui.screens.NotificationsScreen
+import com.example.doccur.ui.screens.patient.AppointmentsScreen
 import com.example.doccur.ui.screens.patient.DoctorDetailsScreen
 import com.example.doccur.ui.screens.patient.DoctorsScreen
+import com.example.doccur.viewmodels.AppointmentViewModel
+import com.example.doccur.viewmodels.AppointmentViewModelFactory
 import com.example.doccur.viewmodels.HomeViewModel
 import com.example.doccur.viewmodels.HomeViewModelFactory
 import com.example.doccur.viewmodels.NotificationViewModel
@@ -38,6 +43,7 @@ sealed class PatientScreen(val route: String, val title: String, val icon: Image
         fun createRoute(doctorId: Int) = "doctorDetails/$doctorId"
     }
     object Notifications : PatientScreen("notifications", "Notifications", Icons.Filled.Notifications)
+    object Appointments : PatientScreen("appointments", "Appointments", Icons.Filled.CalendarToday)
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -46,7 +52,8 @@ fun PatientNavGraph(
     navController: NavHostController,
     notificationRepository: NotificationRepository,
     homeRepository: HomeRepository,
-    usersRepository: UsersRepository
+    usersRepository: UsersRepository,
+    appointmentRepository: AppointmentRepository
 ) {
 
     val homeViewModel: HomeViewModel = viewModel(
@@ -62,6 +69,10 @@ fun PatientNavGraph(
 
     val usersViewModel: UsersViewModel = viewModel(
         factory = UsersViewModelFactory(usersRepository)
+    )
+
+    val appointmentViewModel: AppointmentViewModel = viewModel(
+        factory = AppointmentViewModelFactory(appointmentRepository)
     )
 
     NavHost(navController, startDestination = PatientScreen.Home.route) {
@@ -83,6 +94,13 @@ fun PatientNavGraph(
 
         composable(PatientScreen.DoctorList.route) {
             DoctorsScreen(usersViewModel,navController)
+        }
+
+        composable(PatientScreen.Appointments.route) {
+            AppointmentsScreen(
+                viewModel= appointmentViewModel,
+                patientId = 2
+            )
         }
 
         composable(PatientScreen.DoctorDetails.route) { backStackEntry ->
