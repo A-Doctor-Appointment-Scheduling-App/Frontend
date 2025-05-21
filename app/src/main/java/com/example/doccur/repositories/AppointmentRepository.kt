@@ -26,7 +26,7 @@ class AppointmentRepository(private val apiService: ApiService) {
         }
     }
 
-    suspend fun getFullAppointmentsForDoctor(doctorId: Int): List<AppointmentResponse> {
+    suspend fun getFullAppointmentsForDoctor(doctorId: Int): List<AppointmentPatient> {
         return try {
             val response = apiService.getFullAppointmentsByDoctor(doctorId)
             response

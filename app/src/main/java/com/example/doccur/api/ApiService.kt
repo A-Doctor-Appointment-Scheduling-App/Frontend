@@ -15,6 +15,7 @@ import com.example.doccur.entities.MarkReadResponse
 import com.example.doccur.entities.NotificationsResponse
 import com.example.doccur.entities.Patient
 import com.example.doccur.entities.PatientStatisticsResponse
+import com.example.doccur.entities.Prescription
 import com.google.gson.annotations.SerializedName
 import retrofit2.Response
 import retrofit2.http.Body
@@ -79,7 +80,7 @@ interface ApiService {
     @GET("appointments/doctor/{doctor_id}/appointments/full/")
     suspend fun getFullAppointmentsByDoctor(
         @Path("doctor_id") doctorId: Int
-    ): List<AppointmentResponse>
+    ): List<AppointmentPatient>
 
     @GET("appointments/patient/{patient_id}/appointments/full/")
     suspend fun getFullAppointmentsByPatient(@Path("patient_id") patientId: Int): List<AppointmentPatient>
@@ -90,6 +91,11 @@ interface ApiService {
 
     @GET("doctors/{id}/")
     suspend fun getDoctorDetails(@Path("id") doctorId: Int): Response<DoctorDetails>
+
+    @GET("prescriptions/appointment/{appointment_id}/")
+    suspend fun getPrescriptionByAppointmentId(
+        @Path("appointment_id") appointmentId: Int
+    ): Response<Prescription>
 
 
 }

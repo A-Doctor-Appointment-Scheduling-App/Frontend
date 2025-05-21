@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
@@ -383,14 +384,31 @@ fun AppointmentCard(
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = appointmentPatient.status,
-                    color = if (appointmentPatient.status.equals("Confirmed", ignoreCase = true)) Color(0xFF2ECC71) else Color.Gray,
-                    fontSize = 12.sp,
-                    modifier = Modifier
-                        .background(Color(0xFFE8F5E9), RoundedCornerShape(10.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        modifier = Modifier.align(Alignment.TopEnd)
+                    ) {Text(
+                        text = appointmentPatient.status,
+                        color = if (appointmentPatient.status.equals("Confirmed", ignoreCase = true)) Color(0xFF2ECC71) else Color.Gray,
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .background(Color(0xFFE8F5E9), RoundedCornerShape(10.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        if (appointmentPatient.hasPrescription && appointmentPatient.status.equals("completed", true)) {Icon(
+                            imageVector = Icons.Default.Description,
+                            contentDescription = "View Prescription",
+                            tint = Color.Gray,
+                            modifier = Modifier
+                                .size(60.dp)
+                                .clickable { /* open prescription */ }
+                        )}
+                    }
+                }
+
             }
 
             Spacer(modifier = Modifier.height(12.dp))

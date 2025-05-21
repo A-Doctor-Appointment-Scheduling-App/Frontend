@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.doccur.R
-import com.example.doccur.entities.AppointmentResponse
+import com.example.doccur.entities.AppointmentPatient
 import com.example.doccur.ui.theme.AppColors
 import com.example.doccur.ui.theme.Inter
 import com.example.doccur.viewmodels.AppointmentViewModel
@@ -55,7 +56,7 @@ fun AppointmentsScreen(
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val sheetHeight = screenHeight * 0.5f
 
-    var selectedAppointment by remember { mutableStateOf<AppointmentResponse?>(null) }
+    var selectedAppointment by remember { mutableStateOf<AppointmentPatient?>(null) }
     var showBottomSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentDate) {
@@ -207,7 +208,7 @@ fun AppointmentsScreen(
 
 @Composable
 fun AppointmentCard(
-    appointment: AppointmentResponse,
+    appointment: AppointmentPatient,
     onClick: () -> Unit
 ) {
     val statusColor = when (appointment.status.lowercase()) {
@@ -239,6 +240,7 @@ fun AppointmentCard(
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
+            // Top row: time and status
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -251,27 +253,38 @@ fun AppointmentCard(
                     color = Color.Black
                 )
 
-                Surface(
-                    color = statusColor,
-                    shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, statusTextColor)
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (appointment.hasPrescription && appointment.status.equals("completed", true)) {
+                        Icon(
+                            imageVector = Icons.Default.Description,
+                            contentDescription = "View Prescription",
+                            tint = Color.Gray,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable { /* open prescription */ }
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
                     Text(
-                        text = appointment.status.replaceFirstChar { it.uppercase() },
-                        color = statusTextColor,
+                        text = appointment.status,
+                        color = if (appointment.status.equals("Confirmed", ignoreCase = true))
+                            Color(0xFF2ECC71) else Color.Gray,
                         fontSize = 12.sp,
-                        fontFamily = Inter,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        modifier = Modifier
+                            .background(Color(0xFFE8F5E9), RoundedCornerShape(10.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Patient row: image and info
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(
-                    painter = painterResource(id = R.drawable.doctor),
+                    painter = painterResource(id = R.drawable.doctor), // Change to actual patient photo if needed
                     contentDescription = "Patient",
                     modifier = Modifier
                         .size(48.dp)
@@ -300,5 +313,4 @@ fun AppointmentCard(
                 }
             }
         }
-    }
-}
+    }}

@@ -59,21 +59,9 @@ data class AppointmentResponse(
     @SerializedName("qr_code")
     val qrCode: String?,
     val doctor: Int,
-    val patient: PatientData
+    val patient: PatientData,
+    val hasPrescription: Boolean
 )
-
-data class PatientData(
-    val id: Int,
-    @SerializedName("full_name")
-    val fullName: String,
-)
-
-
-data class AppointmentWithDoctor(
-    val appointment: AppointmentResponse,
-    val doctor: Doctor
-)
-
 
 data class AppointmentPatient(
     val id: Int,
@@ -83,8 +71,18 @@ data class AppointmentPatient(
     @SerializedName("qr_code")
     val qrCode: String?,
     val doctor: DoctorData,
-    val patient: PatientData
+    val patient: PatientData,
+    @SerializedName("has_prescription")
+    val hasPrescription: Boolean
 )
+
+data class PatientData(
+    val id: Int,
+    @SerializedName("full_name")
+    val fullName: String,
+)
+
+
 
 data class DoctorData(
     val id: Int,

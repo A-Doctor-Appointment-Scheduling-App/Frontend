@@ -1,5 +1,6 @@
 package com.example.doccur.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.doccur.api.ApiResponse
@@ -7,17 +8,19 @@ import com.example.doccur.api.RetrofitClient
 import com.example.doccur.entities.AppointmentDetailsResponse
 import com.example.doccur.entities.AppointmentPatient
 import com.example.doccur.entities.AppointmentResponse
-import com.example.doccur.entities.AppointmentWithDoctor
 import com.example.doccur.repositories.AppointmentRepository
+import com.example.doccur.repositories.PrescriptionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.Response
 
-class AppointmentViewModel(private val repository: AppointmentRepository) : ViewModel() {
+class AppointmentViewModel(
+    private val repository: AppointmentRepository,
+    ) : ViewModel() {
 
-    private val _appointments = MutableStateFlow<List<AppointmentResponse>>(emptyList())
-    val appointments: StateFlow<List<AppointmentResponse>> = _appointments
+    private val _appointments = MutableStateFlow<List<AppointmentPatient>>(emptyList())
+    val appointments: StateFlow<List<AppointmentPatient>> = _appointments
 
     private val _appointmentsForPatient = MutableStateFlow<List<AppointmentPatient>>(emptyList())
     val appointmentsForPatient: StateFlow<List<AppointmentPatient>> = _appointmentsForPatient
@@ -45,6 +48,9 @@ class AppointmentViewModel(private val repository: AppointmentRepository) : View
 
             try {
                 val result = repository.getFullAppointmentsForDoctor(doctorId)
+                println(result)
+                Log.d("ApptViewModeeel", "🟡doctooooor appointment: $result")
+
                 _appointments.value = result
             } catch (e: Exception) {
                 _error.value = e.message
