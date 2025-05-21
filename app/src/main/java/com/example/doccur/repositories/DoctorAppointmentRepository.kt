@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.doccur.api.ApiService
 import com.example.doccur.entities.AppointmentResponse
 class DoctorAppointmentRepository(private val apiService: ApiService) {
+
     suspend fun getFullAppointmentsForDoctor(doctorId: Int): List<AppointmentResponse> {
         Log.d("DOCTOR_REPO", "Fetching appointments for doctor: $doctorId")
         return try {

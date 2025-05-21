@@ -1,184 +1,114 @@
 package com.example.doccur
 
-import android.annotation.SuppressLint
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import com.example.doccur.api.RetrofitClient
 import com.example.doccur.navigation.DocNavGraph
 import com.example.doccur.navigation.PatientNavGraph
+import com.example.doccur.repositories.DoctorAppointmentRepository
 import com.example.doccur.repositories.NotificationRepository
 import com.example.doccur.ui.components.DocBottomBar
 import com.example.doccur.ui.components.PatientBottomBar
 import com.example.doccur.ui.theme.DoccurTheme
-import com.example.doccur.viewmodels.DoctorViewModel
-import com.example.doccur.viewmodels.PatientAppointmentsViewModel
-import com.example.doccur.viewmodels.SessionViewModel
-import com.jakewharton.threetenabp.AndroidThreeTen
+
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 100
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AndroidThreeTen.init(this)
 
-        Log.d("MainActivity", "Activity created")
+        // Register permission result handler
+        val requestPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                // Permission granted, notifications will work
+            } else {
+                // Permission denied
+                // You might want to show a message to the user
+            }
+        }
 
-        val repository = NotificationRepository(RetrofitClient.apiService)
-        Log.d("MainActivity", "Repository initialized")
+        // Check and request notification permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    // Permission already granted
+                }
+                else -> {
+                    // Request the permission
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
+
+        val notificationRepository = NotificationRepository(RetrofitClient.apiService)
+        val doctorAppointmentRepository = DoctorAppointmentRepository(RetrofitClient.apiService)
 
         setContent {
             DoccurTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    MainScreen(repository)
+                    MainScreen(notificationRepository,doctorAppointmentRepository)
                 }
             }
         }
     }
 }
 
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainScreen(repository: NotificationRepository) {
+fun MainScreen(
+    notificationRepository: NotificationRepository,
+    doctorAppointmentRepository: DoctorAppointmentRepository,
+) {
     val navController = rememberNavController()
-    val sessionViewModel: SessionViewModel = viewModel()
-    val context = LocalContext.current
+    val userType = "doctor"
 
-    // Debug logs
-    LaunchedEffect(Unit) {
-        Log.d("MainScreen", "Composable initialized")
-    }
-
-    // Choose between "patient" and "doctor" based on app state, login, etc.
-    val userType = "patient" // This should come from your auth system
-
-    LaunchedEffect(userType) {
-        Log.d("MainScreen", "User type set to: $userType")
-        when (userType) {
-            "patient" -> {
-                sessionViewModel.setPatientSession(2)
-                Log.d("MainScreen", "Patient session set with ID 1")
+    if (userType == "patient") { // Changed from === to ==
+        Scaffold(
+            bottomBar = {
+                PatientBottomBar(navController)
             }
-            "doctor" -> {
-                sessionViewModel.setDoctorSession(1)
-                Log.d("MainScreen", "Doctor session set with ID 1")
+        ) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding)) {
+                PatientNavGraph(navController, notificationRepository)
             }
         }
-    }
-
-    // Observe session states
-    val patientId by sessionViewModel.patientId.collectAsState()
-    val doctorId by sessionViewModel.doctorId.collectAsState()
-
-    LaunchedEffect(patientId, doctorId) {
-        Log.d("MainScreen", "Current IDs - Patient: $patientId, Doctor: $doctorId")
-    }
-
-    when (userType) {
-        "patient" -> {
-            if (patientId != null) {
-                Log.d("MainScreen", "Building patient UI")
-                PatientUI(navController, repository, sessionViewModel)
-            } else {
-                Log.w("MainScreen", "Patient ID is null")
-                LoadingUI("Patient data")
+    } else if (userType == "doctor") { // Changed from === to ==
+        Scaffold(
+            bottomBar = {
+                DocBottomBar(navController)
             }
-        }
-        "doctor" -> {
-            if (doctorId != null) {
-                Log.d("MainScreen", "Building doctor UI")
-                DoctorUI(navController, repository)
-            } else {
-                Log.w("MainScreen", "Doctor ID is null")
-                LoadingUI("Doctor data")
+        ) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding)) {
+                DocNavGraph(
+                    navController,
+                    notificationRepository,
+                    doctorAppointmentRepository
+                )
             }
-        }
-        else -> {
-            Log.e("MainScreen", "Invalid user type: $userType")
-            LoadingUI("User data")
-        }
-    }
-}
-
-@SuppressLint("StateFlowValueCalledInComposition")
-@Composable
-private fun PatientUI(
-    navController: NavHostController,
-    repository: NotificationRepository,
-    sessionViewModel: SessionViewModel
-) {
-    val viewModel: PatientAppointmentsViewModel = viewModel()
-
-    LaunchedEffect(sessionViewModel.patientId.value) {
-        sessionViewModel.patientId.value?.let { id ->
-            Log.d("PatientUI", "Fetching appointments for patient $id")
-            viewModel.fetchAppointments(id)
-        }
-    }
-
-    Scaffold(
-        bottomBar = { PatientBottomBar(navController) }
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            PatientNavGraph(
-                navController = navController,
-                repository = repository,
-                sessionViewModel = sessionViewModel
-            )
-        }
-    }
-}
-
-@SuppressLint("StateFlowValueCalledInComposition")
-@Composable
-private fun DoctorUI(
-    navController: NavHostController,
-    repository: NotificationRepository
-) {
-    val viewModel: DoctorViewModel = viewModel()
-    val sessionViewModel: SessionViewModel = viewModel()
-
-    LaunchedEffect(sessionViewModel.doctorId.value) {
-        sessionViewModel.doctorId.value?.let { id ->
-            Log.d("DoctorUI", "Fetching appointments for doctor $id")
-            viewModel.fetchAppointments(id)
-        }
-    }
-
-    Scaffold(
-        bottomBar = { DocBottomBar(navController) }
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            DocNavGraph(
-                navController = navController,
-                repository = repository
-            )
-        }
-    }
-}
-
-@Composable
-private fun LoadingUI(message: String) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            CircularProgressIndicator()
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("Loading $message...")
         }
     }
 }

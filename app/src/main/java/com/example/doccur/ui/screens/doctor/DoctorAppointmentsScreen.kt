@@ -24,32 +24,29 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.doccur.R
 import com.example.doccur.entities.AppointmentResponse
-import com.example.doccur.entities.Patient
-import com.example.doccur.viewmodels.DoctorViewModel
-import com.example.doccur.viewmodels.SessionViewModel
-import org.threeten.bp.LocalDate
-import org.threeten.bp.format.DateTimeFormatter
+import com.example.doccur.viewmodels.DoctorAppointmentViewModel
 import androidx.compose.foundation.shape.CircleShape
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DoctorAppointmentsScreen(
-    viewModel: DoctorViewModel = viewModel(),
-    sessionViewModel: SessionViewModel = viewModel(),
+    viewModel: DoctorAppointmentViewModel,
+    doctorId: Int,
     onAppointmentClick: (AppointmentResponse) -> Unit = {}
 ) {
     var currentDate by remember { mutableStateOf(LocalDate.now()) }
     val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
     val appointments by viewModel.appointments.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val error by viewModel.errorMessage.collectAsState()
 
+    // Trigger fetch when date changes
     LaunchedEffect(currentDate) {
-        sessionViewModel.doctorId.value?.let { doctorId ->
-            viewModel.fetchAppointments(doctorId)
-        }
+        viewModel.fetchAppointments(doctorId)
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -97,6 +94,7 @@ fun DoctorAppointmentsScreen(
                     CircularProgressIndicator()
                 }
             }
+
             error != null -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -113,15 +111,14 @@ fun DoctorAppointmentsScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(onClick = {
-                            sessionViewModel.doctorId.value?.let { doctorId ->
-                                viewModel.fetchAppointments(doctorId)
-                            }
+                            viewModel.fetchAppointments(doctorId)
                         }) {
                             Text("Retry")
                         }
                     }
                 }
             }
+
             else -> {
                 val filteredAppointments = appointments
                     .filter { it.date == currentDate.toString() }
@@ -153,7 +150,6 @@ fun DoctorAppointmentsScreen(
 }
 
 @Composable
-
 fun AppointmentCard(
     appointment: AppointmentResponse,
     onClick: () -> Unit
@@ -184,8 +180,8 @@ fun AppointmentCard(
         Column(
             modifier = Modifier
                 .background(statusColor)
-                .padding(16.dp))
-        {
+                .padding(16.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -226,7 +222,7 @@ fun AppointmentCard(
 
                 Column {
                     Text(
-                        text = "Patient ID: ${appointment.patient_id}",
+                        text = "Patient ID: ${appointment.patient}",
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp
                     )
@@ -243,7 +239,7 @@ fun AppointmentCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (!appointment.qr_code.isNullOrEmpty()) {
+            if (!appointment.qrCode.isNullOrEmpty()) {
                 Text(
                     text = "QR Code: Available",
                     fontSize = 14.sp,

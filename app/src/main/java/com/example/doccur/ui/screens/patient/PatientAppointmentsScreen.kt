@@ -1,5 +1,7 @@
 package com.example.doccur.ui.screens.patient
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,10 +34,11 @@ import com.example.doccur.entities.AppointmentResponse
 import com.example.doccur.entities.AppointmentWithDoctor
 import com.example.doccur.ui.screens.doctor.AppointmentCard
 import com.example.doccur.viewmodels.PatientAppointmentsViewModel
-import org.threeten.bp.LocalDate
-import org.threeten.bp.format.DateTimeFormatter
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 enum class AppointmentTab { UPCOMING, PREVIOUS, CANCELLED }
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PatientAppointmentsScreen(patientId: Int) {
     val viewModel: PatientAppointmentsViewModel = viewModel()

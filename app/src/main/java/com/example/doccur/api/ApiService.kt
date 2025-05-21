@@ -29,6 +29,7 @@ interface ApiService {
 
     @GET("patients/{id}/")
     suspend fun getPatientById(@Path("id") id: Int): Response<Patient>
+
     @GET("appointments/doctor/{doctor_id}/appointments/")
     suspend fun getDoctorAppointments(@Path("doctor_id") doctorId: Int): Response<List<Appointment>>
 

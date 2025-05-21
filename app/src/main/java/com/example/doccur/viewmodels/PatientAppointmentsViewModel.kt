@@ -35,7 +35,7 @@ class PatientAppointmentsViewModel : ViewModel() {
 
                 val fullAppointments = rawAppointments.mapNotNull { appointment ->
                     try {
-                        val doctorResponse = RetrofitClient.apiService.getDoctorById(appointment.doctor_id)
+                        val doctorResponse = RetrofitClient.apiService.getDoctorById(appointment.doctor)
                         if (doctorResponse.isSuccessful) {
                             doctorResponse.body()?.let { doctor ->
                                 AppointmentWithDoctor(appointment, doctor)

@@ -27,8 +27,8 @@ sealed class PatientScreen(val route: String, val title: String, val icon: Image
 fun PatientNavGraph(
     navController: NavHostController,
     repository: NotificationRepository,
-    sessionViewModel: SessionViewModel
 ) {
+
     NavHost(navController, startDestination = PatientScreen.Home.route) {
 
         composable(PatientScreen.Home.route) {
@@ -39,7 +39,7 @@ fun PatientNavGraph(
             val viewModel: NotificationViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
                 factory = NotificationViewModelFactory(repository)
             )
-            val userId = sessionViewModel.patientId.value ?: 0 // fallback for safety
+            val userId = 1
 
             NotificationsScreen(
                 viewModel = viewModel,
@@ -48,11 +48,11 @@ fun PatientNavGraph(
             )
         }
 
-        composable(PatientScreen.PatientAppointments.route) {
-            val patientId = sessionViewModel.patientId.value
-            if (patientId != null) {
-                PatientAppointmentsScreen(patientId = patientId)
-            }
-        }
+//        composable(PatientScreen.PatientAppointments.route) {
+//            val patientId = sessionViewModel.patientId.value
+//            if (patientId != null) {
+//                PatientAppointmentsScreen(patientId = patientId)
+//            }
+//        }
     }
 }
