@@ -5,6 +5,8 @@ import com.example.doccur.entities.AppointmentDetailsResponse
 import com.example.doccur.entities.AppointmentResponse
 import com.example.doccur.entities.ConfirmAppointmentResponse
 import com.example.doccur.entities.Doctor
+import com.example.doccur.entities.Doctor2
+import com.example.doccur.entities.DoctorDetails
 import com.example.doccur.entities.DoctorProfile
 import com.example.doccur.entities.DoctorStatisticsResponse
 import com.example.doccur.entities.MarkReadResponse
@@ -64,13 +66,21 @@ interface ApiService {
     ): Response<ApiResponse>
 
     @GET("doctors/{doctor_id}/")
-    suspend fun getDoctorDetails(
+    suspend fun getDoctorProfile(
         @Path("doctor_id") doctorId: Int): Response<DoctorProfile>
 
     @GET("appointments/doctor/{doctor_id}/appointments/full/")
     suspend fun getFullAppointmentsByDoctor(
         @Path("doctor_id") doctorId: Int
     ): List<AppointmentResponse>
+
+    //List of doctors
+
+    @GET("accounts/doctors/")
+    suspend fun getDoctors(): Response<List<Doctor2>>
+
+    @GET("doctors/{id}/")
+    suspend fun getDoctorDetails(@Path("id") doctorId: Int): Response<DoctorDetails>
 }
 
 

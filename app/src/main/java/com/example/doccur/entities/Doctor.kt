@@ -10,12 +10,11 @@ data class Doctor(
     @SerializedName("photo_url") val profileImage: String? = null,
     val phoneNumber: String? = null,
     val email: String? = null,
-
     val facebookLink: String? = null,
     val instagramLink: String? = null,
     val twitterLink: String? = null,
     val linkedinLink: String? = null
-) {
-    val fullName: String
-        get() = "Dr. $firstName $lastName"
-}
+)
+
+
+

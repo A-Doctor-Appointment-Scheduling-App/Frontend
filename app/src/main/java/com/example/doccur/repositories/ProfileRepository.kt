@@ -5,7 +5,7 @@ import com.example.doccur.entities.DoctorProfile
 
 class ProfileRepository(private val apiService: ApiService) {
     suspend fun getDoctorDetails(doctorId: Int): DoctorProfile? {
-        val response = apiService.getDoctorDetails(doctorId)
+        val response = apiService.getDoctorProfile(doctorId)
         return if (response.isSuccessful) {
             response.body()
         } else {
