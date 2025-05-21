@@ -12,7 +12,8 @@ data class AppointmentResponse(
 )
 data class AppointmentWithDoctor(
     val appointment: AppointmentResponse,
-    val doctor: Doctor
+    val doctor: Doctor,
+    val hasPrescription: Boolean = false
 )
 
 

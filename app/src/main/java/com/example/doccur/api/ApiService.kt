@@ -5,6 +5,7 @@ import com.example.doccur.entities.AppointmentResponse
 import com.example.doccur.entities.Doctor
 import com.example.doccur.entities.Notification
 import com.example.doccur.entities.Patient
+import com.example.doccur.entities.Prescription
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -39,6 +40,12 @@ interface ApiService {
     suspend fun getFullAppointmentsByDoctor(
         @Path("doctor_id") doctorId: Int
     ): List<AppointmentResponse>
+
+    // ApiService.kt
+    @GET("prescriptions/appointment/{appointment_id}/")
+    suspend fun getPrescriptionByAppointmentId(
+        @Path("appointment_id") appointmentId: Int
+    ): Response<Prescription>
 }
 
 data class NotificationsResponse(

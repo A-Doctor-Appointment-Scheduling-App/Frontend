@@ -214,6 +214,16 @@ fun AppointmentCard(
                 ) {
                     Text("Cancel")
                 }
+                if (appointmentWithDoctor.hasPrescription && appointment.status.equals("completed", true)) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_prescription),
+                        contentDescription = "Prescription",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { /* TODO: Navigate to prescription */ },
+                        tint = Color(0xFF2196F3)
+                    )
+                }
             }
         }
     }
