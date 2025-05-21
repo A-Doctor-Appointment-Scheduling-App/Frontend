@@ -87,6 +87,11 @@ dependencies {
     implementation ("androidx.compose.material:material-icons-extended:1.5.0")
     implementation ("io.coil-kt:coil-compose:2.4.0") // For image loading
     implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
+    implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation ("com.jakewharton.threetenabp:threetenabp:1.4.4")
+    implementation ("io.coil-kt:coil-compose:2.4.0")
+    implementation ("androidx.compose.material:material-icons-extended:1.5.4")
+
 
 
 

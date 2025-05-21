@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -40,7 +41,10 @@ fun PatientNavGraph(
     )
 
     val notificationViewModel: NotificationViewModel = viewModel(
-        factory = NotificationViewModelFactory(notificationRepository)
+        factory = NotificationViewModelFactory(
+            notificationRepository,
+            context = LocalContext.current,
+            wsBaseUrl = "ws://172.20.10.4:8000")
     )
 
     NavHost(navController, startDestination = PatientScreen.Home.route) {

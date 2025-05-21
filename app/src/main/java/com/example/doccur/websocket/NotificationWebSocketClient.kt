@@ -1,6 +1,8 @@
 package com.example.doccur.websocket
 
+import android.content.Context
 import android.util.Log
+import com.example.doccur.DoccurApplication
 import com.example.doccur.entities.Notification
 import com.google.gson.Gson
 import com.google.gson.JsonParser
@@ -11,12 +13,12 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import okhttp3.*
 import java.util.concurrent.TimeUnit
-import com.google.gson.JsonObject
 
 class NotificationWebSocketClient(
     private val baseUrl: String,
     private val userType: String,
-    private val userId: Int
+    private val userId: Int,
+    private val context: Context? = null  // Add Context parameter (nullable)
 ) {
     private val TAG = "WebSocketClient"
     private var client: OkHttpClient? = null
@@ -77,10 +79,23 @@ class NotificationWebSocketClient(
                             id = notificationJson.get("id").asInt,
                             title = notificationJson.get("title").asString,
                             message = notificationJson.get("message").asString,
+                            isRead = false,
                         )
 
+                        // Emit notification to flow for UI updates
                         CoroutineScope(Dispatchers.Main).launch {
                             _notificationFlow.emit(notification)
+                        }
+
+                        // Show system notification if context is available
+                        context?.let { ctx ->
+                            try {
+                                val app = ctx.applicationContext as DoccurApplication
+                                app.notificationChannelManager.showNotification(notification)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Error showing notification: ${e.message}")
+                                e.printStackTrace()
+                            }
                         }
                     }
                 } catch (e: Exception) {
@@ -106,7 +121,4 @@ class NotificationWebSocketClient(
             }
         }
     }
-
-
-
 }

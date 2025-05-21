@@ -1,5 +1,9 @@
 package com.example.doccur.ui.screens.doctor
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,15 +22,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.doccur.navigation.DoctorScreen
 import com.example.doccur.ui.theme.AppColors
 import com.example.doccur.ui.theme.Inter
 import com.example.doccur.viewmodels.AppointmentViewModel
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 
 @Composable
 fun AppointmentDetailsScreen(
@@ -38,30 +46,103 @@ fun AppointmentDetailsScreen(
     val loading by viewModel.loading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
 
-
     LaunchedEffect(appointmentId) {
         viewModel.fetchAppointmentDetails(appointmentId)
     }
 
-    val confirmationMessage by viewModel.confirmationMessage.collectAsState()
-    var showDialog by remember { mutableStateOf(false) }
+    // Local state for confirmation messages
+    var localConfirmationMessage by remember { mutableStateOf<String?>(null) }
+    val viewModelConfirmationMessage by viewModel.confirmationMessage.collectAsStateWithLifecycle()
 
-    LaunchedEffect(confirmationMessage) {
-        if (confirmationMessage != null) {
+    // Dialog states
+    var showDialog by remember { mutableStateOf(false) }
+    var showRejectDialog by remember { mutableStateOf(false) }
+    var rejectReason by remember { mutableStateOf("") }
+
+    // QR Scanning state and launchers
+    var showQrScanner by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    // Permission launcher
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            showQrScanner = true
+        } else {
+            localConfirmationMessage = "Camera permission is required for QR scanning"
             showDialog = true
         }
     }
 
-    var showRejectDialog by remember { mutableStateOf(false) }
-    var rejectReason by remember { mutableStateOf("") }
+    val qrCodeLauncher = rememberLauncherForActivityResult(
+        contract = ScanContract()
+    ) { result ->
+        if (result.contents != null) {
+            try {
+                // Parse the QR code content to extract appointment ID
+                val qrContent = result.contents
+                val idLine = qrContent.lines().firstOrNull { it.startsWith("Appointment ID:") }
 
+                if (idLine != null) {
+                    val scannedAppointmentId = idLine.substringAfter("Appointment ID:").trim().toInt()
+                    if (scannedAppointmentId == appointmentId) {
+                        viewModel.scanQrCode(appointmentId) // Call your backend function
+                    } else {
+                        localConfirmationMessage = "Invalid QR code: Doesn't match this appointment"
+                        showDialog = true
+                    }
+                } else {
+                    localConfirmationMessage = "Invalid QR code format: Missing appointment ID"
+                    showDialog = true
+                }
+            } catch (e: NumberFormatException) {
+                localConfirmationMessage = "Invalid QR code: Couldn't read appointment ID"
+                showDialog = true
+            } catch (e: Exception) {
+                localConfirmationMessage = "Error processing QR code: ${e.message}"
+                showDialog = true
+            }
+        }
+    }
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center, ) {
+    // Launch QR scanner when needed
+    LaunchedEffect(showQrScanner) {
+        if (showQrScanner) {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                val options = ScanOptions().apply {
+                    setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+                    setPrompt("Scan patient's QR code")
+                    setCameraId(0)
+                    setBeepEnabled(false)
+                    setBarcodeImageEnabled(true)
+                    setOrientationLocked(false)
+                }
+                qrCodeLauncher.launch(options)
+            } else {
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+            showQrScanner = false // Reset the state
+        }
+    }
+
+    // Handle confirmation messages from ViewModel
+    LaunchedEffect(viewModelConfirmationMessage) {
+        viewModelConfirmationMessage?.let { message ->
+            localConfirmationMessage = message
+            showDialog = true
+            viewModel.clearConfirmationMessage()
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         when {
             loading -> CircularProgressIndicator()
-
             error != null -> Text("Error: $error", color = MaterialTheme.colorScheme.error)
-
             details != null -> {
                 val data = details!!
 
@@ -87,7 +168,7 @@ fun AppointmentDetailsScreen(
 
                         when (data.status.lowercase()) {
                             "confirmed" -> {
-                                Row(){
+                                Row {
                                     Text(
                                         "confirmed",
                                         color = AppColors.Green,
@@ -103,9 +184,8 @@ fun AppointmentDetailsScreen(
                                     )
                                 }
                             }
-
                             "rejected" -> {
-                                Row(){
+                                Row {
                                     Text(
                                         "Rejected",
                                         color = AppColors.Red,
@@ -121,9 +201,8 @@ fun AppointmentDetailsScreen(
                                     )
                                 }
                             }
-
                             "completed" -> {
-                                Row(){
+                                Row {
                                     Text(
                                         "Completed",
                                         color = AppColors.Green,
@@ -166,7 +245,6 @@ fun AppointmentDetailsScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-
                     // Patient details list items
                     DetailItemWithIcon(
                         icon = Icons.Default.DateRange,
@@ -194,7 +272,6 @@ fun AppointmentDetailsScreen(
                         textColor = Color.Black
                     )
 
-
                     Spacer(modifier = Modifier.height(8.dp))
 
                     when (data.status.lowercase()) {
@@ -206,9 +283,7 @@ fun AppointmentDetailsScreen(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 OutlinedButton(
-                                    onClick = {
-                                        showRejectDialog = true
-                                    },
+                                    onClick = { showRejectDialog = true },
                                     modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(8.dp),
                                     border = BorderStroke(1.dp, Color(0xFFFE3B46)),
@@ -220,12 +295,8 @@ fun AppointmentDetailsScreen(
                                     Text("Reject", fontWeight = FontWeight.Bold)
                                 }
 
-
-                                // Confirm button
                                 Button(
-                                    onClick = {
-                                        viewModel.confirmAppointment(appointmentId)
-                                    },
+                                    onClick = { viewModel.confirmAppointment(appointmentId) },
                                     modifier = Modifier.weight(1f),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(0xFF4285F4)
@@ -240,7 +311,6 @@ fun AppointmentDetailsScreen(
                                 }
                             }
                         }
-
                         "confirmed" -> {
                             Column(
                                 modifier = Modifier
@@ -251,7 +321,15 @@ fun AppointmentDetailsScreen(
 
                                 Button(
                                     onClick = {
-                                        // TODO: Implement check-in logic
+                                        if (ContextCompat.checkSelfPermission(
+                                                context,
+                                                Manifest.permission.CAMERA
+                                            ) == PackageManager.PERMISSION_GRANTED
+                                        ) {
+                                            showQrScanner = true
+                                        } else {
+                                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                        }
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = ButtonDefaults.buttonColors(
@@ -259,13 +337,41 @@ fun AppointmentDetailsScreen(
                                     ),
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Text("Check-In", fontWeight = FontWeight.Bold,color = Color.White )
+                                    Text("Check-In", fontWeight = FontWeight.Bold, color = Color.White)
+                                }
+                            }
+                        }
+                        "completed" -> {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 2.dp)
+                            ) {
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Button(
+                                    onClick = {
+                                        if (data.hasPrescription) {
+                                            // Navigate to view prescription screen
+                                        } else {
+                                            // Navigate to add prescription screen
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF4285F4)
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text(
+                                        if (data.hasPrescription) "View Prescription" else "Add Prescription",
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
                                 }
                             }
                         }
 
-                        else -> {
-                        }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -274,40 +380,34 @@ fun AppointmentDetailsScreen(
         }
     }
 
-    if (showDialog && confirmationMessage != null) {
+    // Confirmation dialog
+    if (showDialog && localConfirmationMessage != null) {
         AlertDialog(
             onDismissRequest = {
                 showDialog = false
-                viewModel.clearConfirmationMessage()
+                localConfirmationMessage = null
                 viewModel.fetchAppointmentDetails(appointmentId) // Refresh
             },
-
-
             confirmButton = {
                 TextButton(onClick = {
                     showDialog = false
-                    viewModel.clearConfirmationMessage()
+                    localConfirmationMessage = null
                     viewModel.fetchAppointmentDetails(appointmentId) // Refresh
                 }) {
                     Text("OK", color = Color.Blue)
                 }
             },
-            title = {
-                Text("Success", color = Color.Black, fontWeight = FontWeight.Bold)
-            },
-            text = {
-                Text(confirmationMessage!!, color = Color.Black)
-            },
+            title = { Text("Success", color = Color.Black, fontWeight = FontWeight.Bold) },
+            text = { Text(localConfirmationMessage!!, color = Color.Black) },
             containerColor = Color.White,
             shape = RoundedCornerShape(8.dp)
         )
     }
 
+    // Reject appointment dialog
     if (showRejectDialog) {
         AlertDialog(
-            onDismissRequest = {
-                showRejectDialog = false
-            },
+            onDismissRequest = { showRejectDialog = false },
             title = {
                 Text(
                     text = "Reject Appointment",
@@ -345,7 +445,6 @@ fun AppointmentDetailsScreen(
                         singleLine = false,
                         maxLines = 4
                     )
-
                 }
             },
             confirmButton = {
@@ -361,15 +460,11 @@ fun AppointmentDetailsScreen(
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Submit", fontWeight = FontWeight.Medium,color = Color.White)
+                    Text("Submit", fontWeight = FontWeight.Medium, color = Color.White)
                 }
             },
             dismissButton = {
-                TextButton(
-                    onClick = {
-                        showRejectDialog = false
-                    }
-                ) {
+                TextButton(onClick = { showRejectDialog = false }) {
                     Text("Cancel", color = Color.Gray)
                 }
             },
@@ -377,8 +472,6 @@ fun AppointmentDetailsScreen(
             shape = RoundedCornerShape(12.dp)
         )
     }
-
-
 }
 
 @Composable

@@ -2,11 +2,13 @@ package com.example.doccur.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.doccur.api.ApiResponse
 import com.example.doccur.entities.AppointmentDetailsResponse
 import com.example.doccur.repositories.AppointmentRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import retrofit2.Response
 
 class AppointmentViewModel(private val repository: AppointmentRepository) : ViewModel() {
 
@@ -43,8 +45,8 @@ class AppointmentViewModel(private val repository: AppointmentRepository) : View
             _error.value = null
             _confirmationMessage.value = null
             try {
-                val message = repository.confirmAppointment(appointmentId)
-                _confirmationMessage.value = message
+                val response = repository.confirmAppointment(appointmentId)
+                _confirmationMessage.value = response.message
             } catch (e: Exception) {
                 _error.value = e.message
             } finally {
@@ -69,6 +71,24 @@ class AppointmentViewModel(private val repository: AppointmentRepository) : View
         }
     }
 
+
+    fun scanQrCode(appointmentId: Int) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            _confirmationMessage.value = null
+            try {
+                val response = repository.scanQrCode(appointmentId)
+                _confirmationMessage.value = response.message ?: "Appointment checked-in successfully"
+                _error.value = "Failed to check-in appointment"
+                fetchAppointmentDetails(appointmentId)
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Failed to process QR code"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
 
     fun clearConfirmationMessage() {
         _confirmationMessage.value = null

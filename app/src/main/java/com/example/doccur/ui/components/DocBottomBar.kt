@@ -32,7 +32,6 @@ fun DocBottomBar(navController: NavController) {
     val items = listOf(
         DoctorScreen.Home,
         DoctorScreen.Appointements,
-        DoctorScreen.Patients,
         DoctorScreen.Notifications,
         DoctorScreen.Profile,
     )

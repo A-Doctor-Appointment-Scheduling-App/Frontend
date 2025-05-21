@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.BlendMode.Companion.Screen
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -24,10 +25,10 @@ import androidx.navigation.navArgument
 import com.example.doccur.repositories.AppointmentRepository
 import com.example.doccur.repositories.HomeRepository
 import com.example.doccur.repositories.NotificationRepository
+import com.example.doccur.repositories.ProfileRepository
 import com.example.doccur.ui.screens.NotificationsScreen
 import com.example.doccur.ui.screens.doctor.AppointmentDetailsScreen
 import com.example.doccur.ui.screens.doctor.DoctorHomeScreen
-import com.example.doccur.ui.screens.doctor.PatientsScreen
 import com.example.doccur.ui.screens.doctor.ProfileScreen
 import com.example.doccur.viewmodels.AppointmentViewModel
 import com.example.doccur.viewmodels.AppointmentViewModelFactory
@@ -35,6 +36,8 @@ import com.example.doccur.viewmodels.HomeViewModel
 import com.example.doccur.viewmodels.HomeViewModelFactory
 import com.example.doccur.viewmodels.NotificationViewModel
 import com.example.doccur.viewmodels.NotificationViewModelFactory
+import com.example.doccur.viewmodels.ProfileViewModel
+import com.example.doccur.viewmodels.ProfileViewModelFactory
 
 // Screen objects for navigation
 sealed class DoctorScreen(val route: String, val title: String, val icon: ImageVector) {
@@ -47,7 +50,6 @@ sealed class DoctorScreen(val route: String, val title: String, val icon: ImageV
     ) {
         fun createRoute(appointmentId: Int) = "appointmentDetails/$appointmentId"
     }
-    object Patients : DoctorScreen("patients", "Patients", Icons.Filled.Person)
     object Notifications : DoctorScreen("notifications", "Notifications", Icons.Filled.Notifications)
     object Profile : DoctorScreen("profile", "Profile", Icons.Filled.MedicalServices)
 
@@ -60,7 +62,8 @@ fun DocNavGraph(
     navController: NavHostController,
     notificationRepository: NotificationRepository,
     homeRepository: HomeRepository,
-    appointmentRepository: AppointmentRepository
+    appointmentRepository: AppointmentRepository,
+    profileRepository: ProfileRepository
 ) {
 
     val homeViewModel: HomeViewModel = viewModel(
@@ -68,19 +71,26 @@ fun DocNavGraph(
     )
 
     val notificationViewModel: NotificationViewModel = viewModel(
-        factory = NotificationViewModelFactory(notificationRepository)
+        factory = NotificationViewModelFactory(
+            notificationRepository,
+            context = LocalContext.current,
+            wsBaseUrl = "ws://172.20.10.4:8000")
     )
 
     val appointmentViewModel: AppointmentViewModel = viewModel(
         factory = AppointmentViewModelFactory(appointmentRepository)
     )
 
+    val profileViewModel: ProfileViewModel = viewModel(
+        factory = ProfileViewModelFactory(profileRepository)
+    )
+
     NavHost(navController, startDestination = DoctorScreen.Home.route) {
         composable(DoctorScreen.Home.route) {
-            val userId = 1
+            val doctorId = 1
             DoctorHomeScreen(
                 viewModel = homeViewModel,
-                userId = userId)
+                userId = doctorId)
         }
 
         composable(DoctorScreen.Appointements.route) {
@@ -99,23 +109,19 @@ fun DocNavGraph(
             )
         }
 
-
-        composable(DoctorScreen.Patients.route) {
-            PatientsScreen()
-        }
-
         composable(DoctorScreen.Notifications.route) {
-            val userId = 1
+            val doctorId = 1
 
             NotificationsScreen(
                 viewModel = notificationViewModel,
-                userId = userId,
+                userId = doctorId,
                 userType = "doctor"
             )
         }
 
         composable(DoctorScreen.Profile.route) {
-            ProfileScreen()
+            val doctorId = 1
+            ProfileScreen(viewModel = profileViewModel, doctorId=doctorId)
         }
     }
 }

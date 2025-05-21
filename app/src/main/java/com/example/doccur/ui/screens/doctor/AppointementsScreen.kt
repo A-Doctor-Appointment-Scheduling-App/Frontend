@@ -40,7 +40,7 @@ fun AppointementsScreen(
                         .padding(16.dp)
                 ) {
                     AppointmentDetailsScreen(
-                        appointmentId = 2,
+                        appointmentId = 8,
                         viewModel = viewModel,
                         navController = navController
                     )

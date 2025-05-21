@@ -1,11 +1,17 @@
 package com.example.doccur.api
 
+import com.example.doccur.entities.Appointment
 import com.example.doccur.entities.AppointmentDetailsResponse
+import com.example.doccur.entities.AppointmentResponse
 import com.example.doccur.entities.ConfirmAppointmentResponse
+import com.example.doccur.entities.Doctor
+import com.example.doccur.entities.DoctorProfile
 import com.example.doccur.entities.DoctorStatisticsResponse
 import com.example.doccur.entities.MarkReadResponse
 import com.example.doccur.entities.NotificationsResponse
+import com.example.doccur.entities.Patient
 import com.example.doccur.entities.PatientStatisticsResponse
+import com.google.gson.annotations.SerializedName
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -52,8 +58,28 @@ interface ApiService {
         @Body reasonBody: RejectReasonRequest
     ): Response<ConfirmAppointmentResponse>
 
+    @POST("appointments/scan/{appointment_id}/")
+    suspend fun scanQrCode(
+        @Path("appointment_id") appointmentId: Int
+    ): Response<ApiResponse>
+
+    @GET("appointments/patient/{id}/appointments")
+    suspend fun getAppointmentsByPatient(@Path("id") patientId: Int): List<AppointmentResponse>
+
+    @GET("patients/{id}/")
+    suspend fun getPatientById(@Path("id") id: Int): Response<Patient>
+    @GET("appointments/doctor/{doctor_id}/appointments/")
+    suspend fun getDoctorAppointments(@Path("doctor_id") doctorId: Int): Response<List<Appointment>>
+
+    @GET("doctors/{doctor_id}/")
+    suspend fun getDoctorDetails(
+        @Path("doctor_id") doctorId: Int): Response<DoctorProfile>
 }
 
 
 data class RejectReasonRequest(val reason: String)
 
+data class ApiResponse(
+    @SerializedName("message")
+    val message: String? = null,
+)

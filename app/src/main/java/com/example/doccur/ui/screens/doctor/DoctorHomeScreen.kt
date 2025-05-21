@@ -558,9 +558,8 @@ fun calculateTimeUntilAppointment(appointmentDate: String, appointmentTime: Stri
 
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun calculateAge(birthDateString: String): Int {
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    val birthDate = LocalDate.parse(birthDateString, formatter)
-    val currentDate = LocalDate.now()
-    return Period.between(birthDate, currentDate).years
+fun calculateAge(birthDateString: String?): Int {
+    if (birthDateString.isNullOrEmpty()) return 0
+    val birthDate = LocalDate.parse(birthDateString, DateTimeFormatter.ISO_DATE)
+    return Period.between(birthDate, LocalDate.now()).years
 }
