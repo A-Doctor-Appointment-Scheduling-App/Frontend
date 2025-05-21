@@ -23,6 +23,7 @@ import com.example.doccur.repositories.AppointmentRepository
 import com.example.doccur.repositories.HomeRepository
 import com.example.doccur.repositories.NotificationRepository
 import com.example.doccur.repositories.ProfileRepository
+import com.example.doccur.repositories.UsersRepository
 import com.example.doccur.ui.components.DocBottomBar
 import com.example.doccur.ui.components.PatientBottomBar
 import com.example.doccur.ui.theme.DoccurTheme
@@ -69,11 +70,13 @@ class MainActivity : ComponentActivity() {
         val homeRepository = HomeRepository(RetrofitClient.apiService)
         val appointmentRepository = AppointmentRepository(RetrofitClient.apiService)
         val profileRepository = ProfileRepository(RetrofitClient.apiService)
+        val usersRepository = UsersRepository(RetrofitClient.apiService)
+
 
         setContent {
             DoccurTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    MainScreen(notificationRepository, homeRepository, appointmentRepository,profileRepository)
+                    MainScreen(notificationRepository, homeRepository, appointmentRepository,profileRepository,usersRepository)
                 }
             }
         }
@@ -87,10 +90,11 @@ fun MainScreen(
     notificationRepository: NotificationRepository,
     homeRepository: HomeRepository,
     appointmentRepository: AppointmentRepository,
-    profileRepository: ProfileRepository
+    profileRepository: ProfileRepository,
+    usersRepository: UsersRepository
 ) {
     val navController = rememberNavController()
-    val userType = "doctor"
+    val userType = "patient"
 
     if (userType == "patient") { // Changed from === to ==
         Scaffold(
@@ -99,7 +103,7 @@ fun MainScreen(
             }
         ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
-                PatientNavGraph(navController, notificationRepository, homeRepository)
+                PatientNavGraph(navController, notificationRepository, homeRepository,usersRepository)
             }
         }
     } else if (userType == "doctor") { // Changed from === to ==

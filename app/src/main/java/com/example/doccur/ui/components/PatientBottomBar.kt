@@ -22,6 +22,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.doccur.navigation.DoctorScreen
 import com.example.doccur.navigation.PatientScreen
+import com.example.doccur.ui.screens.patient.DoctorsScreen
 import com.example.doccur.ui.theme.AppColors
 import com.example.doccur.ui.theme.Inter
 
@@ -29,7 +30,8 @@ import com.example.doccur.ui.theme.Inter
 fun PatientBottomBar(navController: NavController) {
     val items = listOf(
         PatientScreen.Home,
-        PatientScreen.Notifications
+        PatientScreen.DoctorList,
+        PatientScreen.Notifications,
     )
 
     Column {

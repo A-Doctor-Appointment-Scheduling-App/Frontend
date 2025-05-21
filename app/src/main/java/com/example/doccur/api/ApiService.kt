@@ -75,8 +75,7 @@ interface ApiService {
     ): List<AppointmentResponse>
 
     //List of doctors
-
-    @GET("accounts/doctors/")
+    @GET("doctors/")
     suspend fun getDoctors(): Response<List<Doctor2>>
 
     @GET("doctors/{id}/")

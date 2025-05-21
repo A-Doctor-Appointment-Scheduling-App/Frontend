@@ -124,7 +124,7 @@ fun DocNavGraph(
 
         composable(DoctorScreen.Profile.route) {
             val doctorId = 1
-            ProfileScreen(viewModel = profileViewModel, doctorId=doctorId)
+            ProfileScreen(viewModel = profileViewModel, doctorId=doctorId,onBackClick={})
         }
     }
 }

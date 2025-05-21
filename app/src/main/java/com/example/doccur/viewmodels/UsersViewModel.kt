@@ -9,8 +9,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class UsersViewModel : ViewModel() {
-    private val repository = UsersRepository()
+class UsersViewModel(
+    private val repository: UsersRepository
+) : ViewModel() {
 
     private val _doctorList = MutableStateFlow<List<Doctor2>>(emptyList())
     val doctorList: StateFlow<List<Doctor2>> = _doctorList
@@ -24,14 +25,10 @@ class UsersViewModel : ViewModel() {
     fun loadDoctors() {
         viewModelScope.launch {
             try {
-                val response = repository.fetchDoctors()
-                if (response != null && response.isSuccessful) {
-                    _doctorList.value = response.body() ?: emptyList()
-                } else {
-                    _errorMessage.value = "Failed to load doctors: ${response?.code()}"
-                }
+                val doctors = repository.fetchDoctors()
+                _doctorList.value = doctors
             } catch (e: Exception) {
-                _errorMessage.value = "Exception: ${e.localizedMessage}"
+                _errorMessage.value = "Failed to load doctors: ${e.localizedMessage}"
             }
         }
     }
@@ -39,14 +36,10 @@ class UsersViewModel : ViewModel() {
     fun loadDoctorDetails(id: Int) {
         viewModelScope.launch {
             try {
-                val response = repository.fetchDoctorDetails(id)
-                if (response != null && response.isSuccessful) {
-                    _selectedDoctor.value = response.body()
-                } else {
-                    _errorMessage.value = "Failed to load doctor details: ${response?.code()}"
-                }
+                val doctorDetails = repository.fetchDoctorDetails(id)
+                _selectedDoctor.value = doctorDetails
             } catch (e: Exception) {
-                _errorMessage.value = "Exception: ${e.localizedMessage}"
+                _errorMessage.value = "Failed to load doctor details: ${e.localizedMessage}"
             }
         }
     }
