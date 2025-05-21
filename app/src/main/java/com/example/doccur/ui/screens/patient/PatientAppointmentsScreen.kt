@@ -1,4 +1,6 @@
 package com.example.doccur.ui.screens.patient
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.Icons
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -9,7 +11,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LocationOn
@@ -154,14 +155,31 @@ fun AppointmentCard(
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                Text(
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        modifier = Modifier.align(Alignment.TopEnd)
+                    ) {Text(
                     text = appointment.status,
                     color = if (appointment.status.equals("Confirmed", ignoreCase = true)) Color(0xFF2ECC71) else Color.Gray,
                     fontSize = 12.sp,
                     modifier = Modifier
                         .background(Color(0xFFE8F5E9), RoundedCornerShape(10.dp))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
-                )
+                    )
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            // Prescription Icon
+                        if (appointmentWithDoctor.hasPrescription && appointment.status.equals("completed", true)) {Icon(
+                            imageVector = Icons.Default.Description,
+                            contentDescription = "View Prescription",
+                            tint = Color.Gray,
+                            modifier = Modifier
+                                .size(60.dp)
+                                .clickable { /* open prescription */ }
+                        )}
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -214,7 +232,7 @@ fun AppointmentCard(
                 ) {
                     Text("Cancel")
                 }
-                if (appointmentWithDoctor.hasPrescription && appointment.status.equals("completed", true)) {
+                /*if (appointmentWithDoctor.hasPrescription && appointment.status.equals("completed", true)) {
                     Icon(
                         painter = painterResource(R.drawable.ic_prescription),
                         contentDescription = "Prescription",
@@ -223,7 +241,7 @@ fun AppointmentCard(
                             .clickable { /* TODO: Navigate to prescription */ },
                         tint = Color(0xFF2196F3)
                     )
-                }
+                }*/
             }
         }
     }
