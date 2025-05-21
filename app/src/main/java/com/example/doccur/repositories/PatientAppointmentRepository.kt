@@ -15,7 +15,7 @@ class PatientAppointmentRepository(private val apiService: ApiService) {
    suspend fun getFullAppointmentsForPatient(patientId: Int): List<AppointmentResponse> {
        Log.d("Repository", "Calling API for patientId = $patientId")
 
-       val response = apiService.getAppointmentsByPatient(patientId)
+       val response = apiService.getFullAppointmentsByPatient(patientId)
 
        // Log each appointment in a readable format
        response.forEachIndexed { index, appointment ->

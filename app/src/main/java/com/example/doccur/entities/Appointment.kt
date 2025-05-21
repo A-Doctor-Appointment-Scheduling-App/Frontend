@@ -7,6 +7,7 @@ import org.threeten.bp.format.DateTimeFormatter
 import java.util.Locale
 
 data class Appointment(
+    val id: Int,
     val doctor_id: Int,
     val patient_id: Int,
     val date: String,
