@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
 
         val notificationRepository = NotificationRepository(RetrofitClient.apiService)
         val homeRepository = HomeRepository(RetrofitClient.apiService)
-        val appointmentRepository = AppointmentRepository(RetrofitClient.apiService)
+        val appointmentRepository = AppointmentRepository(RetrofitClient.apiService, this)
         val profileRepository = ProfileRepository(RetrofitClient.apiService)
         val usersRepository = UsersRepository(RetrofitClient.apiService)
 
