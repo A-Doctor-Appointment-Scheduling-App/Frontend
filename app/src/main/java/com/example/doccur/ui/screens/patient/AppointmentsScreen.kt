@@ -2,6 +2,7 @@ package com.example.doccur.ui.screens.patient
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -376,7 +377,7 @@ fun AppointmentCard(
     val doctor = appointmentPatient.doctor
 
     Card(
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(6.dp),
         elevation = 8.dp,
         modifier = Modifier
             .fillMaxWidth()
@@ -394,25 +395,41 @@ fun AppointmentCard(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text("Doctor: ${doctor.fullName}",
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("${doctor.fullName}",
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = Inter,
+                        fontSize = 16.sp
+
+                        )
+                    Spacer(modifier = Modifier.height(5.dp))
+
                     Text(doctor.speciality ?: "Specialty not available",
                         fontSize = 14.sp,
-                        color = Color.Gray
-                    )
+                        color = Color.Gray,
+                        fontFamily = Inter,
+
+                        )
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Column(
                         horizontalAlignment = Alignment.End,
                         modifier = Modifier.align(Alignment.TopEnd)
-                    ) {Text(
+                    ) {
+                        Text(
                         text = appointmentPatient.status,
-                        color = if (appointmentPatient.status.equals("Confirmed", ignoreCase = true)) Color(0xFF2ECC71) else Color.Gray,
-                        fontSize = 12.sp,
+                        fontFamily = Inter,
+                            fontSize = 14.sp,
+                            color = when {
+                                appointmentPatient.status.equals("Confirmed", ignoreCase = true) -> Color(0xFF34B233) // light green bg
+                                appointmentPatient.status.equals("Completed", ignoreCase = true) -> Color(0xFF34B233) // light green bg
+                                appointmentPatient.status.equals("Cancelled", ignoreCase = true) -> Color(0xFFFF2C2C) // light green bg
+                                appointmentPatient.status.equals("rejected", ignoreCase = true) -> Color(0xFFFF2C2C) // light green bg
+                                appointmentPatient.status.equals("Pending", ignoreCase = true) -> Color(0xFFEE6C07) // light orange bg
+                                else -> Color(0xFFF0F0F0) // light gray bg
+                            },
+                            fontWeight = FontWeight.SemiBold,
                         modifier = Modifier
-                            .background(Color(0xFFE8F5E9), RoundedCornerShape(10.dp))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                         Spacer(modifier = Modifier.height(6.dp))
@@ -442,48 +459,77 @@ fun AppointmentCard(
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     "${appointmentPatient.date} at ${appointmentPatient.time}",
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    fontFamily = Inter
                 )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.LocationOn,
-                    contentDescription = "Location",
-                    tint = Color.Gray,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("City Hospital, Block A", fontSize = 14.sp) // You can replace with appointment location if available
-            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
+
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
-                    onClick = onViewQRCode,
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF005EFF))
+                    onClick = { /* Reschedule */ },
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = AppColors.Blue // Updated to containerColor
+                    ),
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Text("   View\nQR Code", color = Color.White)
+                    Text(
+                        text = "Reschedule",
+                        color = Color.White,
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
-                OutlinedButton(onClick = { /* Reschedule */ }) {
-                    Text("Reschedule")
-                }
+
                 OutlinedButton(
                     onClick = {
-                        // Pass both the appointment ID and patient ID
                         viewModel.cancelAppointment(appointmentPatient.id, appointmentPatient.patient.id)
                     },
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.Red
+                    ),
+                    border = BorderStroke(1.dp, Color.Red),
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Text("Cancel")
+                    Text(
+                        "Cancel",
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
+
+
+            Column {
+                OutlinedButton(
+                    onClick = onViewQRCode,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.Black // Text color
+                    ),
+                    border = BorderStroke(1.dp, AppColors.Blue), // Outline color
+                    shape = RoundedCornerShape(4.dp) // Optional: customize corner radius
+                ) {
+                    Text(
+                        text = "   View QR Code", // Extra spacing retained
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppColors.Blue
+                    )
+                }
+            }
+
         }
     }
 }
@@ -583,10 +629,8 @@ fun AppointmentDetailsDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Action Buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+
+                Column {
                     Button(
                         onClick = onViewQRCode,
                         colors = ButtonDefaults.buttonColors(
@@ -596,7 +640,12 @@ fun AppointmentDetailsDialog(
                     ) {
                         Text("View QR Code", color = Color.White)
                     }
+                }
 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Spacer(modifier = Modifier.width(8.dp))
 
                     OutlinedButton(
