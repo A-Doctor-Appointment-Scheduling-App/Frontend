@@ -11,7 +11,6 @@ import com.example.doccur.entities.AppointmentDetailsResponse
 import com.example.doccur.entities.AppointmentPatient
 import com.example.doccur.entities.AppointmentResponse
 import com.example.doccur.repositories.AppointmentRepository
-import com.example.doccur.repositories.PrescriptionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

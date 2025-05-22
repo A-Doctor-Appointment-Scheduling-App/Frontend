@@ -1,91 +1,45 @@
 package com.example.doccur.ui.components
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.doccur.navigation.DoctorScreen
-import com.example.doccur.navigation.PatientScreen
-import com.example.doccur.ui.screens.patient.DoctorsScreen
-import com.example.doccur.ui.theme.AppColors
-import com.example.doccur.ui.theme.Inter
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Person
+
+val patientBottomNavItems = listOf(
+    BottomNavItem("Home", Icons.Default.Home, "patient_home"),
+    BottomNavItem("Appointments", Icons.Default.CalendarToday, "patient_appointments"),
+    BottomNavItem("Profile", Icons.Default.Person, "patient_profile")
+)
 
 @Composable
 fun PatientBottomBar(navController: NavController) {
-    val items = listOf(
-        PatientScreen.Home,
-        PatientScreen.DoctorList,
-        PatientScreen.Appointments,
-        PatientScreen.Notifications,
+    BottomNavigation {
+        val navBackStackEntry = navController.currentBackStackEntry
+        val currentRoute = navBackStackEntry?.destination?.route
 
-        )
-
-    Column {
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            BottomNavigation(
-                backgroundColor = Color.White,
-                elevation = 8.dp,
-            ) {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-
-                items.forEach { screen ->
-                    val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
-                    BottomNavigationItem(
-                        icon = {
-                            Icon(
-                                imageVector = screen.icon,
-                                contentDescription = screen.title,
-                                tint = if (selected) AppColors.Blue else Color(0xFF9CA3AF),
-                                modifier = Modifier.padding(top = 15.dp)
-                            )
-                        },
-                        label = {
-                            Text(
-                                text = screen.title,
-                                fontFamily = Inter,
-                                fontSize = 11.sp,
-                                color = if (selected) AppColors.Blue else Color(0xFF9CA3AF),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(bottom = 15.dp)
-                            )
-                        },
-                        selected = selected,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        alwaysShowLabel = true
-                    )
+        patientBottomNavItems.forEach { item ->
+            BottomNavigationItem(
+                icon = { Icon(item.icon, contentDescription = item.label) },
+                label = { Text(item.label) },
+                selected = currentRoute == item.route,
+                onClick = {
+                    if (currentRoute != item.route) {
+                        navController.navigate(item.route) {
+                            // Pop up to the start destination so you don't accumulate back stack
+                            popUpTo("patient_home") { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
                 }
-            }
+            )
         }
     }
 }

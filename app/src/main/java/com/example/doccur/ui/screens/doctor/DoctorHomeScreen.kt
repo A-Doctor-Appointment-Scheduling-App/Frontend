@@ -53,6 +53,7 @@ import com.example.doccur.ui.screens.customTextStyle
 import com.example.doccur.ui.theme.AppColors
 import com.example.doccur.ui.theme.Inter
 import com.example.doccur.viewmodels.HomeViewModel
+import com.example.doccur.viewmodels.ProfileViewModel
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -65,6 +66,7 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun DoctorHomeScreen(
     viewModel: HomeViewModel = viewModel(),
+    profileViewModel: ProfileViewModel,
     userId: Int
 ) {
     val doctorStats by viewModel.doctorStats.collectAsState()
@@ -73,6 +75,8 @@ fun DoctorHomeScreen(
 
     LaunchedEffect(Unit) {
         viewModel.fetchDoctorStatistics(userId)
+        profileViewModel.getDoctorDetails(userId)
+
     }
 
 
@@ -91,9 +95,15 @@ fun DoctorHomeScreen(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         buildAnnotatedString {
+                            val fullName = listOfNotNull(
+                                profileViewModel.doctor?.last_name?.takeIf { it.isNotBlank() },
+                                profileViewModel.doctor?.first_name?.takeIf { it.isNotBlank() }
+                            ).joinToString(" ")
+
+
                             append("Welcome back ")
                             withStyle(style = SpanStyle(color = AppColors.Blue)) {
-                                append("Dr.Sarah Arabi!")
+                                append("Dr."+fullName)
                             }
                         },
                         style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Bold),

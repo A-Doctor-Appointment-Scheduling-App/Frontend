@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 class NotificationViewModel(
     private val repository: NotificationRepository,
     private val context: Context,  // Add Context parameter
-    private val wsBaseUrl: String = "ws://172.20.10.4:8000"
+    private val wsBaseUrl: String = "ws://192.168.148.132:8000"
 ) : ViewModel() {
 
     private val _notifications = MutableStateFlow<List<Notification>>(emptyList())

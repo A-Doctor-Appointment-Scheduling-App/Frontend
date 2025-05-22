@@ -1,31 +1,107 @@
-package com.example.doccur.repositories
-
+package com.example.doccur.repository
 
 import android.util.Log
 import com.example.doccur.api.ApiService
+import com.example.doccur.entities.CreatePrescriptionRequest
+import com.example.doccur.entities.Medication
 import com.example.doccur.entities.Prescription
+import com.example.doccur.util.Resource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class PrescriptionRepository(private val apiService: ApiService) {
-    suspend fun checkPrescriptionExists(appointmentId: Int): Boolean {
-        Log.d("PrescriptionRepo", "🟡 Checking prescription for appointment: $appointmentId")
 
-        return try {
-            Log.i("PrescriptionRepo", "🔵 Sending API request for appointment: $appointmentId")
-            val response = apiService.getPrescriptionByAppointmentId(appointmentId)
+    suspend fun createPrescription(
+        appointmentId: Int,
+        medications: List<Medication>
+    ): Resource<Prescription> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val request = CreatePrescriptionRequest(
+                    appointment = appointmentId,
+                    medications = medications
+                )
+                Log.d("requst in repo","requst in repo$request")
+                val response = apiService.createPrescription(request)
+                Log.d("response in repo","response in repo$response")
 
-            if (response.isSuccessful) {
-                Log.d("PrescriptionRepo", "🟢 Prescription found for appointment: $appointmentId")
-                Log.v("PrescriptionRepo", "Response code: ${response.code()}, Body: ${response.body()}")
-            } else {
-                Log.w("PrescriptionRepo", "🟠 No prescription found for appointment: $appointmentId")
-                Log.v("PrescriptionRepo", "Error code: ${response.code()}, Message: ${response.errorBody()?.string()}")
+                if (response.isSuccessful) {
+                    Resource.Success(response.body()!!)
+                } else {
+                    Resource.Error("Failed to create prescription: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Resource.Error("Failed to create prescription: ${e.message}")
             }
+        }
+    }
 
-            response.isSuccessful
-        } catch (e: Exception) {
-            Log.e("PrescriptionRepo", "🔴 Error checking prescription for appointment: $appointmentId", e)
-            Log.wtf("PrescriptionRepo", "CRITICAL ERROR: ${e.localizedMessage}")
-            false
+    suspend fun getPrescription(prescriptionId: Int): Resource<Prescription> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.getPrescription(prescriptionId)
+                if (response.isSuccessful) {
+                    Resource.Success(response.body()!!)
+                } else {
+                    Resource.Error("Failed to get prescription: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Resource.Error("Failed to get prescription: ${e.message}")
+            }
+        }
+    }
+    suspend fun downloadPrescriptionPdf(prescriptionId: Int): Resource<ByteArray> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.downloadPrescriptionPdf(prescriptionId)
+                if (response.isSuccessful) {
+                    val pdfBytes = response.body()?.bytes()
+                    if (pdfBytes != null) {
+                        Resource.Success(pdfBytes)
+                    } else {
+                        Resource.Error("Failed to download prescription PDF: Invalid response")
+                    }
+                } else {
+                    Resource.Error("Failed to download prescription PDF: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Resource.Error("Failed to download prescription PDF: ${e.message}")
+            }
+        }
+    }
+
+
+    suspend fun getPrescriptionsByDoctorAndPatient(
+        doctorId: Int,
+        patientId: Int
+    ): Resource<List<Prescription>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.getPrescriptionsByDoctorAndPatient(doctorId, patientId)
+                if (response.isSuccessful) {
+                    Resource.Success(response.body()!!)
+                } else {
+                    Resource.Error("Failed to get prescriptions: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Resource.Error("Failed to get prescriptions: ${e.message}")
+            }
+        }
+    }
+
+
+    suspend fun getPatientPrescriptions(patientId: Int): Resource<List<Prescription>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.getPatientPrescriptions(patientId)
+                if (response.isSuccessful) {
+                    Resource.Success(response.body()!!)
+                } else {
+                    Resource.Error("Failed to fetch prescriptions: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Resource.Error("Failed to fetch prescriptions: ${e.message}")
+            }
         }
     }
 }

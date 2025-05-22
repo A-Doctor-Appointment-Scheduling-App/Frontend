@@ -93,6 +93,11 @@ dependencies {
     implementation ("androidx.compose.material:material-icons-extended:1.5.4")
 
 
+    implementation ("com.auth0:java-jwt:4.0.0")
+    implementation ("com.google.android.gms:play-services-auth:21.0.0")
+
+
+
 
 
 

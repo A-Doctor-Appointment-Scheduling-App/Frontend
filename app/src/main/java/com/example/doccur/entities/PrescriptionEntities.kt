@@ -13,3 +13,7 @@ data class Medication(
     val frequency: String,
     val instructions: String
 )
+data class CreatePrescriptionRequest(
+    val appointment: Int,
+    val medications: List<Medication>
+)

@@ -40,7 +40,7 @@ fun NotificationsScreen(
     viewModel: NotificationViewModel,
     userId: Int,
     userType: String,
-    wsBaseUrl: String = "ws://172.20.10.4:8000"
+    wsBaseUrl: String = "ws://192.168.148.132:8000"
 ) {
 
     // Collect state from ViewModel

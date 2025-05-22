@@ -74,7 +74,7 @@ fun DocNavGraph(
         factory = NotificationViewModelFactory(
             notificationRepository,
             context = LocalContext.current,
-            wsBaseUrl = "ws://172.20.10.4:8000")
+            wsBaseUrl = "ws://192.168.148.132:8000")
     )
 
     val appointmentViewModel: AppointmentViewModel = viewModel(
@@ -90,6 +90,7 @@ fun DocNavGraph(
             val doctorId = 1
             DoctorHomeScreen(
                 viewModel = homeViewModel,
+                profileViewModel = profileViewModel,
                 userId = doctorId)
         }
 

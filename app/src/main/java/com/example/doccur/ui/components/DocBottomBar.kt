@@ -1,92 +1,55 @@
 package com.example.doccur.ui.components
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Divider
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import com.example.doccur.navigation.DoctorScreen
-import com.example.doccur.ui.theme.AppColors
-import com.example.doccur.ui.theme.Inter
+
+data class BottomNavItem(
+    val label: String,
+    val icon: ImageVector,
+    val route: String
+)
+
+val doctorBottomNavItems = listOf(
+    BottomNavItem("Home", Icons.Default.Home, "doctor_home"),
+    BottomNavItem("Appointments", Icons.Default.CalendarToday, "doctor_appointments"),
+    BottomNavItem("Notifications", Icons.Filled.Notifications, "notifications"),
+
+            BottomNavItem("Profile", Icons.Default.Person, "doctor_profile")
+)
 
 @Composable
 fun DocBottomBar(navController: NavController) {
-    val items = listOf(
-        DoctorScreen.Home,
-        DoctorScreen.Appointements,
-        DoctorScreen.Notifications,
-        DoctorScreen.Profile,
-    )
+    BottomNavigation {
+        val navBackStackEntry = navController.currentBackStackEntry
+        val currentRoute = navBackStackEntry?.destination?.route
 
-    Column {
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            BottomNavigation(
-                backgroundColor = Color.White,
-                elevation = 8.dp,
-            ) {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-
-                items.forEach { screen ->
-                    val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
-                    BottomNavigationItem(
-                        icon = {
-                            Icon(
-                                imageVector = screen.icon,
-                                contentDescription = screen.title,
-                                tint = if (selected) AppColors.Blue else Color(0xFF9CA3AF),
-                                modifier = Modifier.padding(top = 15.dp)
-                            )
-                        },
-                        label = {
-                            Text(
-                                text = screen.title,
-                                fontFamily = Inter,
-                                fontSize = 11.sp,
-                                color = if (selected) AppColors.Blue else Color(0xFF9CA3AF),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(bottom = 15.dp)
-                            )
-                        },
-                        selected = selected,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        alwaysShowLabel = true
-                    )
+        doctorBottomNavItems.forEach { item ->
+            BottomNavigationItem(
+                icon = { Icon(item.icon, contentDescription = item.label) },
+                label = { Text(item.label) },
+                selected = currentRoute == item.route,
+                onClick = {
+                    if (currentRoute != item.route) {
+                        navController.navigate(item.route) {
+                            // Pop up to the start destination so you don't accumulate back stack
+                            popUpTo("doctor_home") { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
                 }
-            }
+            )
         }
     }
 }
-
