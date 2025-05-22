@@ -76,7 +76,7 @@ fun PatientPrescriptionsScreen(
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             items(prescriptions) { prescription ->
-                                PrescriptionListItem(
+                                AnimatedPrescriptionListItem(
                                     prescription = prescription,
                                     onClick = { onPrescriptionClick(prescription.id) }
                                 )

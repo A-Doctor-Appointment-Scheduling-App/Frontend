@@ -86,7 +86,9 @@ class PrescriptionViewModel(private val repository: PrescriptionRepository) : Vi
             _prescriptionsListState.value = result
         }
     }
-
+    fun resetCreatePrescriptionState() {
+        _createPrescriptionState.value = null
+    }
     fun resetStates() {
         _createPrescriptionState.value = Resource.Loading
         _prescriptionState.value = Resource.Loading

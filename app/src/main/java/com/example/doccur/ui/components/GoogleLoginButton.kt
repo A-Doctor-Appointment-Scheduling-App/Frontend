@@ -1,5 +1,5 @@
 package com.example.doccur.ui.components
-import android.content.Context
+
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.example.doccur.viewmodel.AuthViewModel
 import com.example.doccur.util.Resource
@@ -26,27 +27,18 @@ fun GoogleLoginButton(
         .build()
 
     val googleSignInClient = GoogleSignIn.getClient(context, gso)
-Log.d("gso","gso:$gso")
-    Log.d("googleSignInClient","googleSignInClient:$googleSignInClient")
 
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val data = result.data
         val task = GoogleSignIn.getSignedInAccountFromIntent(data)
         try {
             val account = task.getResult(ApiException::class.java)
-            Log.d("account","account:$account")
-
             val idToken = account.idToken
-            Log.d("idToken","idToken:$idToken")
-
             if (idToken != null) {
-                Log.d("idToken not null go to model view ","idToken not null go to model view ")
-
                 viewModel.loginWithGoogle(idToken)
             }
         } catch (e: ApiException) {
-            Log.d("error","error:$e")
-
+            Log.d("GoogleLoginButton", "Google sign-in failed: $e")
         }
     }
 
@@ -57,9 +49,10 @@ Log.d("gso","gso:$gso")
         }
     }
 
-    DocCurButton(
-        text = "Login / Sign up with Google",
-        onClick = { launcher.launch(googleSignInClient.signInIntent) },
-        modifier = androidx.compose.ui.Modifier.fillMaxWidth()
+
+
+    GoogleLoginBut(
+onClick ={ launcher.launch(googleSignInClient.signInIntent) } ,
+        modifier = Modifier.fillMaxWidth()
     )
 }

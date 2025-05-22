@@ -47,7 +47,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
                     
-                    // App's navigation setup
                     DocCurApp(
                         navController = navController,
                         tokenManager = tokenManager
@@ -165,17 +164,19 @@ fun DocCurApp(
                 }
             )
         }
-        
+
         // Create prescription screen
         composable("prescriptions/create") {
             CreatePrescriptionScreen(
                 viewModel = prescriptionViewModel,
                 onBackClick = { navController.navigateUp() },
+                appointmentId = 1,
                 onPrescriptionCreated = {
                     Toast.makeText(context, "Prescription created successfully", Toast.LENGTH_SHORT).show()
                     navController.navigate("prescriptions") {
                         popUpTo("prescriptions") { inclusive = true }
                     }
+
                 }
             )
         }

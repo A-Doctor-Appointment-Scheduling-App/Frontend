@@ -29,3 +29,4 @@ val Black = Color(0xFF212121)
 val BackgroundLight = Color(0xFFF8F9FA)
 val CardBackground = Color(0xFFFFFFFF)
 val SurfaceVariant = Color(0xFFEEF2F6)
+
