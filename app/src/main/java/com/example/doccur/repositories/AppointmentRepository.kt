@@ -5,9 +5,11 @@ import com.example.doccur.api.ApiResponse
 import com.example.doccur.api.ApiService
 import com.example.doccur.api.AppointmentBookRequest
 import com.example.doccur.api.RejectReasonRequest
+import com.example.doccur.api.RescheduleRequest
 import com.example.doccur.entities.AppointmentBookResponse
 import com.example.doccur.entities.AppointmentDetailsResponse
 import com.example.doccur.entities.AppointmentPatient
+import com.example.doccur.entities.AppointmentRescheduleResponse
 import com.example.doccur.entities.AppointmentResponse
 import com.example.doccur.entities.CancelAppointmentResponse
 import com.example.doccur.entities.ConfirmAppointmentResponse
@@ -103,5 +105,19 @@ class AppointmentRepository(private val apiService: ApiService) {
             }
         }
     }
+
+    suspend fun rescheduleAppointment(appointmentId: Int, newDate: String?, newTime: String?): AppointmentRescheduleResponse {
+        return withContext(Dispatchers.IO) {
+            val request = RescheduleRequest(new_date = newDate, new_time = newTime)
+            val response = apiService.rescheduleAppointment(appointmentId, request)
+
+            if (response.isSuccessful) {
+                response.body() ?: throw Exception("Empty response body")
+            } else {
+                throw Exception("API error: ${response.code()} - ${response.message()}")
+            }
+        }
+    }
+
 
 }

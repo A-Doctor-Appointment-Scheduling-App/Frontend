@@ -9,6 +9,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -51,6 +52,7 @@ import com.example.doccur.R
 import com.example.doccur.api.RetrofitClient.BASE_URL
 import com.example.doccur.entities.Timeslot
 import com.example.doccur.ui.theme.AppColors
+import com.example.doccur.ui.theme.Inter
 import com.example.doccur.viewmodels.AppointmentViewModel
 import com.example.doccur.viewmodels.UsersViewModel
 import java.text.SimpleDateFormat
@@ -104,19 +106,26 @@ fun DoctorDetailsScreen(
     Scaffold(
         topBar = {
             SmallTopAppBar(
-                title = { Text("Doctor Profile") },
+                title = {
+                    Text(
+                        "Doctor Profile",
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = Color.White
                         )
                     }
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = AppColors.Blue,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
                 )
             )
         }
@@ -125,6 +134,7 @@ fun DoctorDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .background(Color.White)
         ) {
             doctor?.let { doc ->
                 Column(
@@ -145,8 +155,8 @@ fun DoctorDetailsScreen(
                                 .background(
                                     brush = Brush.verticalGradient(
                                         colors = listOf(
-                                            MaterialTheme.colorScheme.primary,
-                                            MaterialTheme.colorScheme.primaryContainer
+                                            AppColors.Blue,
+                                            Color(0xFF90CAF9)
                                         )
                                     )
                                 )
@@ -165,7 +175,7 @@ fun DoctorDetailsScreen(
                                     .size(120.dp)
                                     .padding(4.dp),
                                 shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surface,
+                                color = Color.White,
                                 shadowElevation = 4.dp
                             ) {
                                 AsyncImage(
@@ -188,16 +198,17 @@ fun DoctorDetailsScreen(
                                 Text(
                                     text = "Dr. ${doc.first_name} ${doc.last_name}",
                                     style = MaterialTheme.typography.headlineSmall,
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    fontWeight = FontWeight.Bold
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = Inter
                                 )
 
                                 Spacer(modifier = Modifier.width(8.dp))
 
                                 Surface(
                                     shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    color = AppColors.Blue,
+                                    contentColor = Color.White,
                                     modifier = Modifier.size(24.dp)
                                 ) {
                                     Icon(
@@ -212,7 +223,8 @@ fun DoctorDetailsScreen(
                             Text(
                                 text = doc.specialty,
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                                color = Color.White.copy(alpha = 0.9f),
+                                fontFamily = Inter
                             )
                         }
                     }
@@ -258,9 +270,9 @@ fun DoctorDetailsScreen(
                                 .fillMaxWidth()
                                 .padding(16.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedCornerShape(12.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface
+                                containerColor = Color.White
                             )
                         ) {
                             Column(
@@ -270,6 +282,7 @@ fun DoctorDetailsScreen(
                                     text = "Clinic Information",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
+                                    fontFamily = Inter,
                                     modifier = Modifier.padding(bottom = 12.dp)
                                 )
 
@@ -282,7 +295,7 @@ fun DoctorDetailsScreen(
                                     Icon(
                                         Icons.Default.Business,
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
+                                        tint = AppColors.Blue,
                                         modifier = Modifier.size(24.dp)
                                     )
 
@@ -290,14 +303,15 @@ fun DoctorDetailsScreen(
 
                                     Text(
                                         text = clinic.name,
-                                        style = MaterialTheme.typography.bodyLarge
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontFamily = Inter
                                     )
                                 }
 
                                 Divider(
                                     modifier = Modifier.padding(vertical = 8.dp),
                                     thickness = 1.dp,
-                                    color = MaterialTheme.colorScheme.outlineVariant
+                                    color = Color(0xFFEEEEEE)
                                 )
 
                                 Row(
@@ -318,7 +332,7 @@ fun DoctorDetailsScreen(
                                     Icon(
                                         Icons.Default.LocationOn,
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
+                                        tint = AppColors.Blue,
                                         modifier = Modifier.size(24.dp)
                                     )
 
@@ -328,7 +342,8 @@ fun DoctorDetailsScreen(
                                         Text(
                                             text = clinic.address,
                                             style = MaterialTheme.typography.bodyLarge,
-                                            color = MaterialTheme.colorScheme.primary
+                                            color = AppColors.Blue,
+                                            fontFamily = Inter
                                         )
 
                                         Spacer(modifier = Modifier.height(2.dp))
@@ -336,7 +351,8 @@ fun DoctorDetailsScreen(
                                         Text(
                                             text = clinic.location,
                                             style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.primary
+                                            color = AppColors.Blue,
+                                            fontFamily = Inter
                                         )
                                     }
                                 }
@@ -350,9 +366,9 @@ fun DoctorDetailsScreen(
                             .fillMaxWidth()
                             .padding(16.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
+                            containerColor = Color.White
                         )
                     ) {
                         Column(
@@ -362,6 +378,7 @@ fun DoctorDetailsScreen(
                                 text = "Available Appointments",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
+                                fontFamily = Inter,
                                 modifier = Modifier.padding(bottom = 16.dp)
                             )
 
@@ -394,11 +411,14 @@ fun DoctorDetailsScreen(
                                                     selectedTimeslotId = null
                                                 },
                                                 colors = ButtonDefaults.buttonColors(
-                                                    containerColor = MaterialTheme.colorScheme.primary
+                                                    containerColor = AppColors.Blue
                                                 ),
                                                 shape = RoundedCornerShape(12.dp)
                                             ) {
-                                                Text(displayDate)
+                                                Text(
+                                                    displayDate,
+                                                    fontFamily = Inter
+                                                )
                                             }
                                         } else {
                                             OutlinedButton(
@@ -408,9 +428,16 @@ fun DoctorDetailsScreen(
                                                     selectedTime = null // Reset time selection when date changes
                                                     selectedTimeslotId = null
                                                 },
-                                                shape = RoundedCornerShape(12.dp)
+                                                shape = RoundedCornerShape(12.dp),
+                                                border = BorderStroke(1.dp, AppColors.Blue),
+                                                colors = ButtonDefaults.outlinedButtonColors(
+                                                    contentColor = AppColors.Blue
+                                                )
                                             ) {
-                                                Text(displayDate)
+                                                Text(
+                                                    displayDate,
+                                                    fontFamily = Inter
+                                                )
                                             }
                                         }
                                     }
@@ -436,7 +463,8 @@ fun DoctorDetailsScreen(
                                             Text(
                                                 text = "Morning",
                                                 style = MaterialTheme.typography.labelLarge,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                color = Color.Gray,
+                                                fontFamily = Inter
                                             )
 
                                             TimeSlotRow(
@@ -455,7 +483,8 @@ fun DoctorDetailsScreen(
                                             Text(
                                                 text = "Afternoon",
                                                 style = MaterialTheme.typography.labelLarge,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                color = Color.Gray,
+                                                fontFamily = Inter
                                             )
 
                                             TimeSlotRow(
@@ -473,7 +502,8 @@ fun DoctorDetailsScreen(
                                 Text(
                                     text = "No available timeslots",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = Color.Gray,
+                                    fontFamily = Inter
                                 )
                             }
 
@@ -494,19 +524,25 @@ fun DoctorDetailsScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 enabled = selectedDate != null && selectedTime != null && !isLoading,
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
+                                    containerColor = AppColors.Blue
                                 ),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
                                 if (isLoading) {
                                     androidx.compose.material3.CircularProgressIndicator(
                                         modifier = Modifier.size(16.dp),
-                                        color = MaterialTheme.colorScheme.onPrimary
+                                        color = Color.White
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Booking...")
+                                    Text(
+                                        "Booking...",
+                                        fontFamily = Inter
+                                    )
                                 } else {
-                                    Text("Book Appointment")
+                                    Text(
+                                        "Book Appointment",
+                                        fontFamily = Inter
+                                    )
                                 }
                             }
 
@@ -515,8 +551,9 @@ fun DoctorDetailsScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = errorMessage,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodySmall
+                                    color = Color.Red,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontFamily = Inter
                                 )
                             }
                         }
@@ -529,57 +566,8 @@ fun DoctorDetailsScreen(
                 contentAlignment = Alignment.Center
             ) {
                 androidx.compose.material3.CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary
+                    color = AppColors.Blue
                 )
-            }
-        }
-    }
-}
-
-// Modified TimeSlotRow to handle actual slot selection with timeslot objects
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun TimeSlotRow(
-    slots: List<Timeslot>, // Change this to accept Timeslot objects instead of strings
-    selectedTime: String? = null,
-    onSlotSelected: (Timeslot) -> Unit = {}
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        slots.forEach { slot ->
-            val timeDisplay = formatTimeForDisplay(slot.start_time)
-            val isSelected = slot.start_time == selectedTime
-
-            Surface(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(40.dp),
-                shape = RoundedCornerShape(8.dp),
-                color = if (isSelected)
-                    AppColors.Blue
-                else
-                    AppColors.Blue,
-                contentColor = if (isSelected)
-                    AppColors.Blue
-                else
-                    AppColors.Blue
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable {
-                            onSlotSelected(slot)
-                        }
-                ) {
-                    Text(
-                        text = timeDisplay,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White
-                    )
-                }
             }
         }
     }
@@ -597,9 +585,9 @@ fun ContactActionsRow(
             .padding(horizontal = 16.dp)
             .offset(y = (-20).dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = Color.White
         )
     ) {
         Row(
@@ -644,8 +632,8 @@ fun ContactActionButton(
         Surface(
             modifier = Modifier.size(48.dp),
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            color = AppColors.Blue,
+            contentColor = Color.White
         ) {
             Box(
                 contentAlignment = Alignment.Center,
@@ -664,7 +652,8 @@ fun ContactActionButton(
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = Color.Black,
+            fontFamily = Inter
         )
     }
 }
@@ -682,9 +671,9 @@ fun SocialMediaLinks(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = Color(0xFFF5F5F5)
         )
     ) {
         Row(
@@ -750,7 +739,7 @@ fun SocialMediaIcon(
         modifier = Modifier
             .size(40.dp)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surface)
+            .background(Color.White)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
@@ -761,6 +750,7 @@ fun SocialMediaIcon(
         )
     }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun formatDateForDisplay(dateString: String): String {
@@ -793,20 +783,20 @@ fun formatTimeForDisplay(timeString: String): String {
     }
 }
 
-// Modified TimeSlotRow to handle actual slot selection
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TimeSlotRow(
-    slots: List<String>,
-    onSlotSelected: (String) -> Unit = {}
+    slots: List<Timeslot>,
+    selectedTime: String? = null,
+    onSlotSelected: (Timeslot) -> Unit = {}
 ) {
-    val selectedSlot = remember { mutableStateOf<String?>(null) }
-
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        slots.forEach { time ->
-            val isSelected = time == selectedSlot.value
+        slots.forEach { slot ->
+            val timeDisplay = formatTimeForDisplay(slot.start_time)
+            val isSelected = slot.start_time == selectedTime
 
             Surface(
                 modifier = Modifier
@@ -814,26 +804,26 @@ fun TimeSlotRow(
                     .height(40.dp),
                 shape = RoundedCornerShape(8.dp),
                 color = if (isSelected)
-                    MaterialTheme.colorScheme.primary
+                    AppColors.Blue
                 else
-                    MaterialTheme.colorScheme.surfaceVariant,
+                    Color(0xFFE3F2FD),
                 contentColor = if (isSelected)
-                    MaterialTheme.colorScheme.onPrimary
+                    Color.White
                 else
-                    MaterialTheme.colorScheme.onSurfaceVariant
+                    AppColors.Blue
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .fillMaxSize()
                         .clickable {
-                            selectedSlot.value = time
-                            onSlotSelected(time)
+                            onSlotSelected(slot)
                         }
                 ) {
                     Text(
-                        text = time,
-                        style = MaterialTheme.typography.bodyMedium
+                        text = timeDisplay,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontFamily = Inter
                     )
                 }
             }

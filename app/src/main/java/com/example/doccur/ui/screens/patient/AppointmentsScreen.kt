@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LocationOn
@@ -51,6 +52,204 @@ import java.time.format.DateTimeParseException
 
 
 enum class AppointmentTab { UPCOMING, PREVIOUS, CANCELLED }
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun RescheduleDialog(
+    appointment: AppointmentPatient,
+    onDismiss: () -> Unit,
+    onConfirm: (String, String) -> Unit
+) {
+    var selectedDate by remember { mutableStateOf("") }
+    var selectedTime by remember { mutableStateOf("") }
+    var dateError by remember { mutableStateOf(false) }
+    var timeError by remember { mutableStateOf(false) }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp)
+            ) {
+                Text(
+                    text = "Reschedule appointment",
+                    style = MaterialTheme.typography.h6,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    fontFamily = Inter
+                )
+
+                Text(
+                    text = "Dr. ${appointment.doctor.fullName}",
+                    style = MaterialTheme.typography.subtitle1,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(bottom = 4.dp),
+                    fontFamily = Inter
+
+                )
+
+                Text(
+                    text = "Current: ${appointment.date} at ${appointment.time}",
+                    style = MaterialTheme.typography.body2,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(bottom = 20.dp),
+                    fontFamily = Inter
+
+                )
+
+                // Date Input
+                OutlinedTextField(
+                    value = selectedDate,
+                    onValueChange = {
+                        selectedDate = it
+                        dateError = false
+                    },
+                    label = {
+                        Text(
+                            text="New Date (YYYY-MM-DD)",
+                            fontFamily = Inter
+
+                        ) },
+                    placeholder = { Text("2025-12-22") },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.CalendarToday,
+                            contentDescription = "Date",
+                            tint = AppColors.Blue
+                        )
+                    },
+                    isError = dateError,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = AppColors.Blue,
+                        cursorColor = AppColors.Blue
+                    )
+                )
+
+                if (dateError) {
+                    Text(
+                        text = "Please enter a valid date (YYYY-MM-DD)",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.caption,
+                        fontFamily = Inter,
+                        modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+                    )
+                }
+
+                // Time Input
+                OutlinedTextField(
+                    value = selectedTime,
+                    onValueChange = {
+                        selectedTime = it
+                        timeError = false
+                    },
+                    label = { Text("New Time (HH:MM)",fontFamily = Inter) },
+                    placeholder = { Text("14:30") },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.AccessTime,
+                            contentDescription = "Time",
+                            tint = AppColors.Blue
+                        )
+                    },
+                    isError = timeError,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = AppColors.Blue,
+                        cursorColor = AppColors.Blue
+                    )
+                )
+
+                if (timeError) {
+                    Text(
+                        text = "Please enter a valid time (HH:MM)",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.caption,
+                        modifier = Modifier.padding(start = 16.dp, bottom = 16.dp),
+                        fontFamily = Inter
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Action Buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.Gray
+                        ),
+                        border = BorderStroke(1.dp, Color.Gray)
+                    ) {
+                        Text(
+                            "Cancel",
+                            fontWeight = FontWeight.Medium,
+                            fontFamily = Inter
+                        )
+                    }
+
+                    Button(
+                        onClick = {
+                            // Validate inputs
+                            var hasError = false
+
+                            if (selectedDate.isBlank()) {
+                                dateError = true
+                                hasError = true
+                            } else {
+                                try {
+                                    LocalDate.parse(selectedDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                                } catch (e: Exception) {
+                                    dateError = true
+                                    hasError = true
+                                }
+                            }
+
+                            if (selectedTime.isBlank()) {
+                                timeError = true
+                                hasError = true
+                            } else {
+                                try {
+                                    LocalTime.parse(selectedTime, DateTimeFormatter.ofPattern("HH:mm"))
+                                } catch (e: Exception) {
+                                    timeError = true
+                                    hasError = true
+                                }
+                            }
+
+                            if (!hasError) {
+                                onConfirm(selectedDate, selectedTime)
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = AppColors.Blue
+                        )
+                    ) {
+                        Text(
+                            "Confirm",
+                            color = Color.White,
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -121,7 +320,6 @@ fun QRCodeDialog(
         }
     }
 
-    // Rest of the dialog UI remains the same...
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(16.dp),
@@ -200,6 +398,7 @@ fun AppointmentsScreen(
 ) {
     val appointments by viewModel.appointmentsForPatient.collectAsState()
     val cancelMessage by viewModel.cancelMessage.collectAsState()
+    val confirmationMessage by viewModel.confirmationMessage.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
 
@@ -209,26 +408,12 @@ fun AppointmentsScreen(
     var selectedAppointment by remember { mutableStateOf<AppointmentPatient?>(null) }
     // State for QR code dialog
     var qrCodeDialogData by remember { mutableStateOf<Triple<String, String, String>?>(null) }
+    // State for reschedule dialog
+    var rescheduleAppointment by remember { mutableStateOf<AppointmentPatient?>(null) }
 
     LaunchedEffect(Unit) {
         println("PatientAppointmentsScreen loaded for patientId = $patientId")
         viewModel.fetchAppointmentsForPatient(patientId)
-    }
-
-    // Show dialog if an appointment is selected
-    selectedAppointment?.let { appointment ->
-        AppointmentDetailsDialog(
-            viewModel = viewModel,
-            appointmentPatient = appointment,
-            onDismiss = { selectedAppointment = null },
-            onViewQRCode = {
-                qrCodeDialogData = Triple(
-                    RetrofitClient.BASE_URL1 + appointment.qrCode,
-                    appointment.date,
-                    appointment.time
-                )
-            }
-        )
     }
 
     // Show QR code dialog if URL is set
@@ -238,6 +423,18 @@ fun AppointmentsScreen(
             appointmentDate = date,
             appointmentTime = time,
             onDismiss = { qrCodeDialogData = null }
+        )
+    }
+
+    // Show reschedule dialog if appointment is set
+    rescheduleAppointment?.let { appointment ->
+        RescheduleDialog(
+            appointment = appointment,
+            onDismiss = { rescheduleAppointment = null },
+            onConfirm = { newDate, newTime ->
+                viewModel.rescheduleAppointment(appointment.id, newDate, newTime)
+                rescheduleAppointment = null
+            }
         )
     }
 
@@ -253,6 +450,19 @@ fun AppointmentsScreen(
             )
             // Clear the message after showing
             viewModel.clearCancelMessage()
+        }
+    }
+
+    // Show confirmation message if present (for reschedule)
+    LaunchedEffect(confirmationMessage) {
+        confirmationMessage?.let {
+            scaffoldState.snackbarHostState.showSnackbar(
+                message = it,
+                duration = SnackbarDuration.Short
+            )
+            // Clear the message after showing and refresh appointments
+            viewModel.clearConfirmationMessage()
+            viewModel.fetchAppointmentsForPatient(patientId)
         }
     }
 
@@ -286,14 +496,14 @@ fun AppointmentsScreen(
                     style = MaterialTheme.typography.h5,
                     fontFamily = Inter,
                     fontWeight = FontWeight.Bold
-                    )
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TabRow(
                     selectedTabIndex = selectedTab.ordinal,
                     backgroundColor = Color.Transparent,
-                    contentColor = AppColors.Blue // default color for indicator, etc.
+                    contentColor = AppColors.Blue
                 ) {
                     AppointmentTab.values().forEach { tab ->
                         val isSelected = selectedTab == tab
@@ -313,8 +523,6 @@ fun AppointmentsScreen(
                         )
                     }
                 }
-
-
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -349,6 +557,7 @@ fun AppointmentsScreen(
                             AppointmentCard(
                                 viewModel = viewModel,
                                 appointmentPatient = appointmentPatient,
+                                currentTab = selectedTab,
                                 onClick = { selectedAppointment = appointmentPatient },
                                 onViewQRCode = {
                                     qrCodeDialogData = Triple(
@@ -356,6 +565,9 @@ fun AppointmentsScreen(
                                         appointmentPatient.date,
                                         appointmentPatient.time
                                     )
+                                },
+                                onReschedule = {
+                                    rescheduleAppointment = appointmentPatient
                                 }
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -371,22 +583,25 @@ fun AppointmentsScreen(
 fun AppointmentCard(
     viewModel: AppointmentViewModel,
     appointmentPatient: AppointmentPatient,
+    currentTab: AppointmentTab,
     onClick: () -> Unit,
-    onViewQRCode: () -> Unit
+    onViewQRCode: () -> Unit,
+    onReschedule: () -> Unit
 ) {
     val doctor = appointmentPatient.doctor
+    val status = appointmentPatient.status.lowercase()
 
     Card(
         shape = RoundedCornerShape(6.dp),
         elevation = 8.dp,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick) // Add clickable modifier
+            .clickable(onClick = onClick)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(
-                    painter = painterResource(id = R.drawable.doctor), // Replace with actual doctor photo if available
+                    painter = painterResource(id = R.drawable.doctor),
                     contentDescription = "Doctor Profile",
                     modifier = Modifier
                         .size(48.dp)
@@ -395,20 +610,20 @@ fun AppointmentCard(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text("${doctor.fullName}",
+                    Text(
+                        "${doctor.fullName}",
                         fontWeight = FontWeight.Bold,
                         fontFamily = Inter,
                         fontSize = 16.sp
-
-                        )
+                    )
                     Spacer(modifier = Modifier.height(5.dp))
 
-                    Text(doctor.speciality ?: "Specialty not available",
+                    Text(
+                        doctor.speciality ?: "Specialty not available",
                         fontSize = 14.sp,
                         color = Color.Gray,
                         fontFamily = Inter,
-
-                        )
+                    )
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Box(modifier = Modifier.fillMaxWidth()) {
@@ -417,34 +632,35 @@ fun AppointmentCard(
                         modifier = Modifier.align(Alignment.TopEnd)
                     ) {
                         Text(
-                        text = appointmentPatient.status,
-                        fontFamily = Inter,
+                            text = appointmentPatient.status,
+                            fontFamily = Inter,
                             fontSize = 14.sp,
                             color = when {
-                                appointmentPatient.status.equals("Confirmed", ignoreCase = true) -> Color(0xFF34B233) // light green bg
-                                appointmentPatient.status.equals("Completed", ignoreCase = true) -> Color(0xFF34B233) // light green bg
-                                appointmentPatient.status.equals("Cancelled", ignoreCase = true) -> Color(0xFFFF2C2C) // light green bg
-                                appointmentPatient.status.equals("rejected", ignoreCase = true) -> Color(0xFFFF2C2C) // light green bg
-                                appointmentPatient.status.equals("Pending", ignoreCase = true) -> Color(0xFFEE6C07) // light orange bg
-                                else -> Color(0xFFF0F0F0) // light gray bg
+                                appointmentPatient.status.equals("Confirmed", ignoreCase = true) -> Color(0xFF34B233)
+                                appointmentPatient.status.equals("Completed", ignoreCase = true) -> Color(0xFF34B233)
+                                appointmentPatient.status.equals("Cancelled", ignoreCase = true) -> Color(0xFFFF2C2C)
+                                appointmentPatient.status.equals("rejected", ignoreCase = true) -> Color(0xFFFF2C2C)
+                                appointmentPatient.status.equals("Pending", ignoreCase = true) -> Color(0xFFEE6C07)
+                                else -> Color(0xFFF0F0F0)
                             },
                             fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
                         Spacer(modifier = Modifier.height(6.dp))
 
-                        if (appointmentPatient.hasPrescription && appointmentPatient.status.equals("completed", true)) {Icon(
-                            imageVector = Icons.Default.Description,
-                            contentDescription = "View Prescription",
-                            tint = Color.Gray,
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clickable { /* open prescription */ }
-                        )}
+                        if (appointmentPatient.hasPrescription && appointmentPatient.status.equals("completed", true)) {
+                            Icon(
+                                imageVector = Icons.Default.Description,
+                                contentDescription = "View Prescription",
+                                tint = Color.Gray,
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .clickable { /* open prescription */ }
+                            )
+                        }
                     }
                 }
-
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -464,84 +680,179 @@ fun AppointmentCard(
                 )
             }
 
-
-
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Conditional button display based on tab and status
+            when (currentTab) {
+                AppointmentTab.UPCOMING -> {
+                    when (status) {
+                        "confirmed" -> {
+                            // Show QR Code, Cancel, and Reschedule buttons
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Button(
+                                    onClick = onReschedule,
+                                    colors = ButtonDefaults.buttonColors(
+                                        backgroundColor = AppColors.Blue
+                                    ),
+                                    shape = RoundedCornerShape(4.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        text = "Reschedule",
+                                        color = Color.White,
+                                        fontFamily = Inter,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
-                    onClick = { /* Reschedule */ },
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = AppColors.Blue // Updated to containerColor
-                    ),
-                    shape = RoundedCornerShape(4.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Reschedule",
-                        color = Color.White,
-                        fontFamily = Inter,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                                OutlinedButton(
+                                    onClick = {
+                                        viewModel.cancelAppointment(appointmentPatient.id, appointmentPatient.patient.id)
+                                    },
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = Color.Red
+                                    ),
+                                    border = BorderStroke(1.dp, Color.Red),
+                                    shape = RoundedCornerShape(4.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        "Cancel",
+                                        fontFamily = Inter,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            OutlinedButton(
+                                onClick = onViewQRCode,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color.Black
+                                ),
+                                border = BorderStroke(1.dp, AppColors.Blue),
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = "   View QR Code",
+                                    fontFamily = Inter,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AppColors.Blue
+                                )
+                            }
+                        }
+                        "completed" -> {
+                            // Show only QR Code button
+                            OutlinedButton(
+                                onClick = onViewQRCode,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color.Black
+                                ),
+                                border = BorderStroke(1.dp, AppColors.Blue),
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = "   View QR Code",
+                                    fontFamily = Inter,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AppColors.Blue
+                                )
+                            }
+                        }
+                        "pending" -> {
+                            // Show Cancel and Reschedule buttons
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Button(
+                                    onClick = onReschedule,
+                                    colors = ButtonDefaults.buttonColors(
+                                        backgroundColor = AppColors.Blue
+                                    ),
+                                    shape = RoundedCornerShape(4.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        text = "Reschedule",
+                                        color = Color.White,
+                                        fontFamily = Inter,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+
+                                OutlinedButton(
+                                    onClick = {
+                                        viewModel.cancelAppointment(appointmentPatient.id, appointmentPatient.patient.id)
+                                    },
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = Color.Red
+                                    ),
+                                    border = BorderStroke(1.dp, Color.Red),
+                                    shape = RoundedCornerShape(4.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        "Cancel",
+                                        fontFamily = Inter,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                        }
+                        "rejected" -> {
+                            // Don't show any buttons
+                        }
+                    }
                 }
-
-                OutlinedButton(
-                    onClick = {
-                        viewModel.cancelAppointment(appointmentPatient.id, appointmentPatient.patient.id)
-                    },
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.Red
-                    ),
-                    border = BorderStroke(1.dp, Color.Red),
-                    shape = RoundedCornerShape(4.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        "Cancel",
-                        fontFamily = Inter,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                AppointmentTab.PREVIOUS -> {
+                    when (status) {
+                        "confirmed", "completed" -> {
+                            // Show only QR Code button
+                            OutlinedButton(
+                                onClick = onViewQRCode,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color.Black
+                                ),
+                                border = BorderStroke(1.dp, AppColors.Blue),
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = "   View QR Code",
+                                    fontFamily = Inter,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AppColors.Blue
+                                )
+                            }
+                        }
+                        "pending", "rejected" -> {
+                            // Don't show any buttons
+                        }
+                    }
+                }
+                AppointmentTab.CANCELLED -> {
+                    // Don't show any buttons for cancelled appointments
                 }
             }
-
-
-            Column {
-                OutlinedButton(
-                    onClick = onViewQRCode,
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.Black // Text color
-                    ),
-                    border = BorderStroke(1.dp, AppColors.Blue), // Outline color
-                    shape = RoundedCornerShape(4.dp) // Optional: customize corner radius
-                ) {
-                    Text(
-                        text = "   View QR Code", // Extra spacing retained
-                        fontFamily = Inter,
-                        fontWeight = FontWeight.SemiBold,
-                        color = AppColors.Blue
-                    )
-                }
-            }
-
         }
     }
 }
 
-// 3. Also update the AppointmentDetailsDialog
 @Composable
 fun AppointmentDetailsDialog(
     viewModel: AppointmentViewModel,
     appointmentPatient: AppointmentPatient,
     onDismiss: () -> Unit,
-    onViewQRCode: () -> Unit
-)  {
+    onViewQRCode: () -> Unit,
+    onReschedule: () -> Unit
+) {
     val doctor = appointmentPatient.doctor
 
     Dialog(onDismissRequest = onDismiss) {
@@ -550,13 +861,14 @@ fun AppointmentDetailsDialog(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(vertical = 16.dp, horizontal = 30.dp)
             ) {
                 // Header
                 Text(
                     text = "Appointment Details",
                     style = MaterialTheme.typography.h6,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(vertical = 16.dp, horizontal = 8.dp),
+                    fontFamily = Inter
                 )
 
                 // Doctor Info Section
@@ -611,7 +923,7 @@ fun AppointmentDetailsDialog(
                     fontSize = 16.sp
                 )
                 Text(
-                    text = "City Hospital, Block A", // Can be dynamic if available
+                    text = "City Hospital, Block A",
                     color = Color.Gray,
                     fontSize = 14.sp
                 )
@@ -629,27 +941,27 @@ fun AppointmentDetailsDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Action Buttons
-
-                Column {
-                    Button(
-                        onClick = onViewQRCode,
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Color(0xFF005EFF)
-                        ),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("View QR Code", color = Color.White)
-                    }
-                }
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    Column {
+                        Button(
+                            onClick = onViewQRCode,
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = Color(0xFF005EFF)
+                            ),
+                        ) {
+                            Text("View QR Code", color = Color.White)
+                        }
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
 
                     OutlinedButton(
-                        onClick = { /* Reschedule */ },
+                        onClick = {
+                            onReschedule()
+                            onDismiss()
+                        },
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("Reschedule")
@@ -660,7 +972,7 @@ fun AppointmentDetailsDialog(
                     OutlinedButton(
                         onClick = {
                             viewModel.cancelAppointment(appointmentPatient.id, appointmentPatient.patient.id)
-                            onDismiss() // Dismiss the dialog after cancellation
+                            onDismiss()
                         },
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
                         modifier = Modifier.weight(1f)

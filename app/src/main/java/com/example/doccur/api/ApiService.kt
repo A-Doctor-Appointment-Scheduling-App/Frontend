@@ -4,6 +4,7 @@ import com.example.doccur.entities.Appointment
 import com.example.doccur.entities.AppointmentBookResponse
 import com.example.doccur.entities.AppointmentDetailsResponse
 import com.example.doccur.entities.AppointmentPatient
+import com.example.doccur.entities.AppointmentRescheduleResponse
 import com.example.doccur.entities.AppointmentResponse
 import com.example.doccur.entities.CancelAppointmentResponse
 import com.example.doccur.entities.ConfirmAppointmentResponse
@@ -74,6 +75,12 @@ interface ApiService {
         @Path("appointment_id") appointmentId: Int,
     ): Response<CancelAppointmentResponse>
 
+    @POST("appointments/{appointment_id}/reschedule/")
+    suspend fun rescheduleAppointment(
+        @Path("appointment_id") appointmentId: Int,
+        @Body request: RescheduleRequest
+    ): Response<AppointmentRescheduleResponse>
+
     @POST("appointments/scan/{appointment_id}/")
     suspend fun scanQrCode(
         @Path("appointment_id") appointmentId: Int
@@ -119,4 +126,9 @@ data class AppointmentBookRequest(
     @SerializedName("doctor_id") val doctorId: Int,
     val date: String,  // Format: "yyyy-MM-dd"
     val time: String   // Format: "HH:mm"
+)
+
+data class RescheduleRequest(
+    val new_date: String?,
+    val new_time: String?
 )

@@ -176,6 +176,24 @@ class AppointmentViewModel(
         }
     }
 
+    fun rescheduleAppointment(appointmentId: Int, newDate: String?, newTime: String?) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            _confirmationMessage.value = null
+
+            try {
+                val response = repository.rescheduleAppointment(appointmentId, newDate, newTime)
+                _confirmationMessage.value = response.message
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Rescheduling failed"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+
     fun scanQrCode(appointmentId: Int) {
         viewModelScope.launch {
             _loading.value = true

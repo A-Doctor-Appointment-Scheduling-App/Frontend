@@ -5,6 +5,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -35,6 +36,8 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.doccur.viewmodels.UsersViewModel
 import com.example.doccur.api.RetrofitClient.BASE_URL
+import com.example.doccur.ui.theme.AppColors
+import com.example.doccur.ui.theme.Inter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,10 +89,16 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
     Scaffold(
         topBar = {
             SmallTopAppBar(
-                title = { Text("Find Doctors") },
+                title = {
+                    Text(
+                        "Find Doctors",
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = AppColors.Blue,
+                    titleContentColor = Color.White
                 )
             )
         }
@@ -98,7 +107,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.background)
+                .background(Color.White)
         ) {
             Column(
                 modifier = Modifier.fillMaxSize()
@@ -107,14 +116,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.primaryContainer
-                                )
-                            )
-                        )
+                        .background(AppColors.Blue)
                         .padding(16.dp)
                 ) {
                     TextField(
@@ -123,14 +125,15 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                         placeholder = {
                             Text(
                                 "Search doctors, specialties...",
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                color = Color.Gray,
+                                fontFamily = Inter
                             )
                         },
                         leadingIcon = {
                             Icon(
                                 Icons.Default.Search,
                                 contentDescription = "Search",
-                                tint = MaterialTheme.colorScheme.onSurface
+                                tint = AppColors.Blue
                             )
                         },
                         trailingIcon = {
@@ -138,7 +141,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                 Icon(
                                     if (showFiltersExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.FilterList,
                                     contentDescription = "Filters",
-                                    tint = MaterialTheme.colorScheme.onSurface
+                                    tint = AppColors.Blue
                                 )
                             }
                         },
@@ -146,7 +149,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp)),
                         colors = TextFieldDefaults.textFieldColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
+                            containerColor = Color.White,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent
                         ),
@@ -168,7 +171,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                         shape = RoundedCornerShape(12.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
+                            containerColor = Color.White
                         )
                     ) {
                         Column(
@@ -177,7 +180,8 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                             Text(
                                 "Filter Options",
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = Inter
                             )
 
                             Spacer(modifier = Modifier.height(12.dp))
@@ -187,18 +191,19 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                 onClick = { showSpecialtyDialog = true },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
-                                border = ButtonDefaults.outlinedButtonBorder,
+                                border = BorderStroke(1.dp, AppColors.Blue),
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     contentColor = if (selectedSpecialty != null)
-                                        MaterialTheme.colorScheme.primary
+                                        AppColors.Blue
                                     else
-                                        MaterialTheme.colorScheme.onSurface
+                                        Color.Gray
                                 )
                             ) {
-                                Icon(Icons.Default.HealthAndSafety, contentDescription = null)
+                                Icon(Icons.Default.HealthAndSafety, contentDescription = null, tint = AppColors.Blue)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = selectedSpecialty ?: "Select Specialty"
+                                    text = selectedSpecialty ?: "Select Specialty",
+                                    fontFamily = Inter
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
                                 if (selectedSpecialty != null) {
@@ -209,7 +214,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                         Icon(
                                             Icons.Default.Close,
                                             contentDescription = "Clear",
-                                            tint = MaterialTheme.colorScheme.primary
+                                            tint = AppColors.Blue
                                         )
                                     }
                                 }
@@ -222,18 +227,19 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                 onClick = { showLocationDialog = true },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
-                                border = ButtonDefaults.outlinedButtonBorder,
+                                border = BorderStroke(1.dp, AppColors.Blue),
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     contentColor = if (selectedLocation != null)
-                                        MaterialTheme.colorScheme.primary
+                                        AppColors.Blue
                                     else
-                                        MaterialTheme.colorScheme.onSurface
+                                        Color.Gray
                                 )
                             ) {
-                                Icon(Icons.Default.LocationOn, contentDescription = null)
+                                Icon(Icons.Default.LocationOn, contentDescription = null, tint = AppColors.Blue)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = selectedLocation ?: "Select Location"
+                                    text = selectedLocation ?: "Select Location",
+                                    fontFamily = Inter
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
                                 if (selectedLocation != null) {
@@ -244,7 +250,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                         Icon(
                                             Icons.Default.Close,
                                             contentDescription = "Clear",
-                                            tint = MaterialTheme.colorScheme.primary
+                                            tint = AppColors.Blue
                                         )
                                     }
                                 }
@@ -267,13 +273,14 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                         Text(
                             text = "${filteredDoctors.size} doctors found",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = Color.Gray,
+                            fontFamily = Inter
                         )
 
                         Card(
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                containerColor = Color(0xFFF5F5F5)
                             ),
                             modifier = Modifier.wrapContentWidth()
                         ) {
@@ -285,15 +292,15 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                     Icons.Default.List,
                                     contentDescription = "List view",
                                     tint = if (!isMapView)
-                                        MaterialTheme.colorScheme.primary
+                                        AppColors.Blue
                                     else
-                                        MaterialTheme.colorScheme.onSurfaceVariant,
+                                        Color.Gray,
                                     modifier = Modifier
                                         .clip(CircleShape)
                                         .clickable { isMapView = false }
                                         .background(
                                             if (!isMapView)
-                                                MaterialTheme.colorScheme.primaryContainer
+                                                Color(0xFFE3F2FD)
                                             else
                                                 Color.Transparent
                                         )
@@ -307,15 +314,15 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                     Icons.Default.GridView,
                                     contentDescription = "Grid view",
                                     tint = if (isMapView)
-                                        MaterialTheme.colorScheme.primary
+                                        AppColors.Blue
                                     else
-                                        MaterialTheme.colorScheme.onSurfaceVariant,
+                                        Color.Gray,
                                     modifier = Modifier
                                         .clip(CircleShape)
                                         .clickable { isMapView = true }
                                         .background(
                                             if (isMapView)
-                                                MaterialTheme.colorScheme.primaryContainer
+                                                Color(0xFFE3F2FD)
                                             else
                                                 Color.Transparent
                                         )
@@ -342,9 +349,9 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                         navController.navigate("doctorDetails/${doctor.id}")
                                     },
                                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedCornerShape(12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surface
+                                    containerColor = Color.White
                                 )
                             ) {
                                 Row(
@@ -355,7 +362,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                     Surface(
                                         modifier = Modifier.size(80.dp),
                                         shape = CircleShape,
-                                        color = MaterialTheme.colorScheme.surface,
+                                        color = Color.White,
                                         shadowElevation = 2.dp
                                     ) {
                                         AsyncImage(
@@ -378,15 +385,16 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                             Text(
                                                 text = "Dr. ${doctor.first_name} ${doctor.last_name}",
                                                 style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Bold
+                                                fontWeight = FontWeight.Bold,
+                                                fontFamily = Inter
                                             )
 
                                             Spacer(modifier = Modifier.width(8.dp))
 
                                             Surface(
                                                 shape = CircleShape,
-                                                color = MaterialTheme.colorScheme.primaryContainer,
-                                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                color = AppColors.Blue,
+                                                contentColor = Color.White,
                                                 modifier = Modifier.size(20.dp)
                                             ) {
                                                 Icon(
@@ -400,7 +408,8 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                         Text(
                                             text = doctor.specialty,
                                             style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.primary
+                                            color = AppColors.Blue,
+                                            fontFamily = Inter
                                         )
 
                                         Spacer(modifier = Modifier.height(8.dp))
@@ -414,7 +423,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                                 Icon(
                                                     Icons.Default.LocalHospital,
                                                     contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    tint = Color.Gray,
                                                     modifier = Modifier.size(16.dp)
                                                 )
 
@@ -423,7 +432,8 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                                 Text(
                                                     text = clinic.name ?: "No clinic information",
                                                     style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    color = Color.Gray,
+                                                    fontFamily = Inter
                                                 )
                                             }
 
@@ -435,7 +445,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                                 Icon(
                                                     Icons.Default.LocationOn,
                                                     contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    tint = Color.Gray,
                                                     modifier = Modifier.size(16.dp)
                                                 )
 
@@ -448,7 +458,8 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                                         clinic.address ?: clinic.location ?: "No address"
                                                     },
                                                     style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    color = Color.Gray,
+                                                    fontFamily = Inter,
                                                     maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis
                                                 )
@@ -461,7 +472,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                         Icon(
                                             Icons.Default.ArrowForward,
                                             contentDescription = "View doctor details",
-                                            tint = MaterialTheme.colorScheme.primary
+                                            tint = AppColors.Blue
                                         )
                                     }
                                 }
@@ -484,9 +495,9 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                         navController.navigate("doctorDetails/${doctor.id}")
                                     },
                                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedCornerShape(12.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surface
+                                    containerColor = Color.White
                                 )
                             ) {
                                 Column(
@@ -497,7 +508,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                     Surface(
                                         modifier = Modifier.size(90.dp),
                                         shape = CircleShape,
-                                        color = MaterialTheme.colorScheme.surface,
+                                        color = Color.White,
                                         shadowElevation = 2.dp
                                     ) {
                                         AsyncImage(
@@ -522,6 +533,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                             text = "Dr. ${doctor.first_name}",
                                             style = MaterialTheme.typography.titleSmall,
                                             fontWeight = FontWeight.Bold,
+                                            fontFamily = Inter,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
@@ -530,8 +542,8 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
 
                                         Surface(
                                             shape = CircleShape,
-                                            color = MaterialTheme.colorScheme.primaryContainer,
-                                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            color = AppColors.Blue,
+                                            contentColor = Color.White,
                                             modifier = Modifier.size(16.dp)
                                         ) {
                                             Icon(
@@ -545,7 +557,8 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                     Text(
                                         text = doctor.specialty,
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.primary,
+                                        color = AppColors.Blue,
+                                        fontFamily = Inter,
                                         textAlign = TextAlign.Center,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
@@ -555,7 +568,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
 
                                     Divider(
                                         modifier = Modifier.padding(horizontal = 8.dp),
-                                        color = MaterialTheme.colorScheme.outlineVariant,
+                                        color = Color(0xFFEEEEEE),
                                         thickness = 1.dp
                                     )
 
@@ -571,7 +584,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                             Icon(
                                                 Icons.Default.LocalHospital,
                                                 contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                tint = Color.Gray,
                                                 modifier = Modifier.size(12.dp)
                                             )
 
@@ -580,13 +593,14 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                             Text(
                                                 text = clinic.name ?: "No clinic",
                                                 style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                color = Color.Gray,
+                                                fontFamily = Inter,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
                                             )
                                         }
 
-                                        // UPDATED: Location with icon (matching list view)
+                                        // Location with icon
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.Center,
@@ -597,7 +611,7 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                             Icon(
                                                 Icons.Default.LocationOn,
                                                 contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                tint = Color.Gray,
                                                 modifier = Modifier.size(12.dp)
                                             )
 
@@ -610,7 +624,8 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                                     clinic.address ?: clinic.location ?: "No address"
                                                 },
                                                 style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                color = Color.Gray,
+                                                fontFamily = Inter,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
                                             )
@@ -628,7 +643,13 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
         if (showSpecialtyDialog) {
             AlertDialog(
                 onDismissRequest = { showSpecialtyDialog = false },
-                title = { Text("Select Specialty") },
+                title = {
+                    Text(
+                        "Select Specialty",
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 text = {
                     LazyColumn {
                         items(specialties) { specialty ->
@@ -642,13 +663,16 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                     .padding(16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(specialty)
+                                Text(
+                                    specialty,
+                                    fontFamily = Inter
+                                )
                                 Spacer(modifier = Modifier.weight(1f))
                                 if (selectedSpecialty == specialty) {
                                     Icon(
                                         Icons.Default.Check,
                                         contentDescription = "Selected",
-                                        tint = MaterialTheme.colorScheme.primary
+                                        tint = AppColors.Blue
                                     )
                                 }
                             }
@@ -657,9 +681,14 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                 },
                 confirmButton = {
                     TextButton(onClick = { showSpecialtyDialog = false }) {
-                        Text("Cancel")
+                        Text(
+                            "Cancel",
+                            fontFamily = Inter,
+                            color = AppColors.Blue
+                        )
                     }
-                }
+                },
+                containerColor = Color.White
             )
         }
 
@@ -667,7 +696,13 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
         if (showLocationDialog) {
             AlertDialog(
                 onDismissRequest = { showLocationDialog = false },
-                title = { Text("Select Location") },
+                title = {
+                    Text(
+                        "Select Location",
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 text = {
                     LazyColumn {
                         items(locations) { location ->
@@ -681,13 +716,16 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                                     .padding(16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(location)
+                                Text(
+                                    location,
+                                    fontFamily = Inter
+                                )
                                 Spacer(modifier = Modifier.weight(1f))
                                 if (selectedLocation == location) {
                                     Icon(
                                         Icons.Default.Check,
                                         contentDescription = "Selected",
-                                        tint = MaterialTheme.colorScheme.primary
+                                        tint = AppColors.Blue
                                     )
                                 }
                             }
@@ -696,9 +734,14 @@ fun DoctorsScreen(viewModel: UsersViewModel, navController: NavController) {
                 },
                 confirmButton = {
                     TextButton(onClick = { showLocationDialog = false }) {
-                        Text("Cancel")
+                        Text(
+                            "Cancel",
+                            fontFamily = Inter,
+                            color = AppColors.Blue
+                        )
                     }
-                }
+                },
+                containerColor = Color.White
             )
         }
     }

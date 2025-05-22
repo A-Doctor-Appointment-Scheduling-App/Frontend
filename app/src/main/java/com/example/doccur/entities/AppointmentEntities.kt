@@ -99,3 +99,7 @@ data class AppointmentBookResponse(
     val status: String
 )
 
+
+data class AppointmentRescheduleResponse(
+    val message: String,
+)
