@@ -94,7 +94,7 @@ fun MainScreen(
     usersRepository: UsersRepository
 ) {
     val navController = rememberNavController()
-    val userType = "doctor"
+    val userType = "patient"
 
     if (userType == "patient") { // Changed from === to ==
         Scaffold(

@@ -37,6 +37,8 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.text.style.TextAlign
 import com.example.doccur.api.RetrofitClient.BASE_URL
 import com.example.doccur.entities.AppointmentPatient
+import com.example.doccur.ui.theme.AppColors
+import com.example.doccur.ui.theme.Inter
 import com.example.doccur.viewmodels.AppointmentViewModel
 import kotlinx.coroutines.delay
 import java.time.Duration
@@ -276,25 +278,42 @@ fun AppointmentsScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp, vertical = 40.dp)
             ) {
-                Text("My Appointments", style = MaterialTheme.typography.h5)
+                Text(
+                    text = "My Appointments",
+                    style = MaterialTheme.typography.h5,
+                    fontFamily = Inter,
+                    fontWeight = FontWeight.Bold
+                    )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TabRow(
                     selectedTabIndex = selectedTab.ordinal,
                     backgroundColor = Color.Transparent,
-                    contentColor = MaterialTheme.colors.primary
+                    contentColor = AppColors.Blue // default color for indicator, etc.
                 ) {
                     AppointmentTab.values().forEach { tab ->
+                        val isSelected = selectedTab == tab
+
                         Tab(
-                            selected = selectedTab == tab,
+                            selected = isSelected,
                             onClick = { selectedTab = tab },
-                            text = { Text(tab.name.lowercase().replaceFirstChar { it.uppercase() }) }
+                            text = {
+                                Text(
+                                    text = tab.name.lowercase().replaceFirstChar { it.uppercase() },
+                                    color = if (isSelected) AppColors.Blue else Color.Gray,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    fontFamily = Inter,
+                                    fontSize = 14.sp
+                                )
+                            }
                         )
                     }
                 }
+
+
 
                 Spacer(modifier = Modifier.height(12.dp))
 

@@ -22,5 +22,14 @@ data class DoctorDetails(
     val facebook_link: String?,
     val instagram_link: String?,
     val twitter_link: String?,
-    val linkedin_link: String?
+    val linkedin_link: String?,
+    val timeslots: List<Timeslot>
+)
+
+data class Timeslot(
+    val id: Int,
+    val start_time: String,
+    val end_time: String,
+    val date: String,
+    val is_booked: Boolean
 )

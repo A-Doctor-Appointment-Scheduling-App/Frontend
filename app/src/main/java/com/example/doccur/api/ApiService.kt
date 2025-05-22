@@ -1,6 +1,7 @@
 package com.example.doccur.api
 
 import com.example.doccur.entities.Appointment
+import com.example.doccur.entities.AppointmentBookResponse
 import com.example.doccur.entities.AppointmentDetailsResponse
 import com.example.doccur.entities.AppointmentPatient
 import com.example.doccur.entities.AppointmentResponse
@@ -51,6 +52,11 @@ interface ApiService {
     suspend fun getAppointmentDetails(
         @Path("appointment_id") appointmentId: Int
     ): Response<AppointmentDetailsResponse>
+
+    @POST("appointments/book/")
+    suspend fun bookAppointment(
+        @Body request: AppointmentBookRequest
+    ): Response<AppointmentBookResponse>
 
     @POST("appointments/{appointment_id}/confirm/")
     suspend fun confirmAppointment(
@@ -106,4 +112,11 @@ data class RejectReasonRequest(val reason: String)
 data class ApiResponse(
     @SerializedName("message")
     val message: String? = null,
+)
+
+data class AppointmentBookRequest(
+    @SerializedName("patient_id") val patientId: Int,
+    @SerializedName("doctor_id") val doctorId: Int,
+    val date: String,  // Format: "yyyy-MM-dd"
+    val time: String   // Format: "HH:mm"
 )

@@ -90,5 +90,12 @@ data class DoctorData(
     val fullName: String,
     val speciality: String,
     @SerializedName("profile_image")
-    val profileImage: String,
-    )
+    val profileImage: String
+)
+
+data class AppointmentBookResponse(
+    val message: String,
+    @SerializedName("appointment_id") val appointmentId: Int,
+    val status: String
+)
+

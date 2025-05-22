@@ -109,6 +109,8 @@ fun PatientNavGraph(
                 DoctorDetailsScreen(
                     viewModel = usersViewModel,
                     doctorId = it,
+                    patientId = 2,
+                    appointmentViewModel = appointmentViewModel,
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

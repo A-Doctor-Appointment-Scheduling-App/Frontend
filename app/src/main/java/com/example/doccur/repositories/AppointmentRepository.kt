@@ -3,7 +3,9 @@ package com.example.doccur.repositories
 import android.util.Log
 import com.example.doccur.api.ApiResponse
 import com.example.doccur.api.ApiService
+import com.example.doccur.api.AppointmentBookRequest
 import com.example.doccur.api.RejectReasonRequest
+import com.example.doccur.entities.AppointmentBookResponse
 import com.example.doccur.entities.AppointmentDetailsResponse
 import com.example.doccur.entities.AppointmentPatient
 import com.example.doccur.entities.AppointmentResponse
@@ -56,6 +58,18 @@ class AppointmentRepository(private val apiService: ApiService) {
             }
         }
     }
+
+    suspend fun bookAppointment(request: AppointmentBookRequest): AppointmentBookResponse {
+        return withContext(Dispatchers.IO) {
+            val response = apiService.bookAppointment(request)
+            if (response.isSuccessful) {
+                response.body() ?: throw Exception("Empty response body")
+            } else {
+                throw Exception("API error: ${response.code()} - ${response.message()}")
+            }
+        }
+    }
+
 
     suspend fun confirmAppointment(appointmentId: Int): ConfirmAppointmentResponse {
         return withContext(Dispatchers.IO) {

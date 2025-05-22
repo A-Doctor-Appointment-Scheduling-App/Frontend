@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.doccur.api.ApiResponse
+import com.example.doccur.api.AppointmentBookRequest
 import com.example.doccur.api.RetrofitClient
+import com.example.doccur.entities.AppointmentBookResponse
 import com.example.doccur.entities.AppointmentDetailsResponse
 import com.example.doccur.entities.AppointmentPatient
 import com.example.doccur.entities.AppointmentResponse
@@ -27,6 +29,10 @@ class AppointmentViewModel(
 
     private val _appointmentDetails = MutableStateFlow<AppointmentDetailsResponse?>(null)
     val appointmentDetails: StateFlow<AppointmentDetailsResponse?> = _appointmentDetails
+
+    private val _appointmentBookingResult = MutableStateFlow<AppointmentBookResponse?>(null)
+    val appointmentBookingResult: StateFlow<AppointmentBookResponse?> = _appointmentBookingResult
+
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
@@ -92,6 +98,31 @@ class AppointmentViewModel(
             }
         }
     }
+
+    fun bookAppointment(patientId: Int, doctorId: Int, date: String, time: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            _appointmentBookingResult.value = null
+
+            try {
+                val request = AppointmentBookRequest(
+                    patientId = patientId,
+                    doctorId = doctorId,
+                    date = date,
+                    time = time
+                )
+                val response = repository.bookAppointment(request)
+                _appointmentBookingResult.value = response
+                _confirmationMessage.value = response.message
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
 
     fun confirmAppointment(appointmentId: Int) {
         viewModelScope.launch {

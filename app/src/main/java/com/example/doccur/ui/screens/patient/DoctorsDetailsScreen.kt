@@ -2,6 +2,8 @@ package com.example.doccur.ui.screens.patient
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -9,6 +11,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -46,31 +49,56 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.doccur.R
 import com.example.doccur.api.RetrofitClient.BASE_URL
+import com.example.doccur.entities.Timeslot
+import com.example.doccur.ui.theme.AppColors
+import com.example.doccur.viewmodels.AppointmentViewModel
 import com.example.doccur.viewmodels.UsersViewModel
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DoctorDetailsScreen(viewModel: UsersViewModel, doctorId: Int, onNavigateBack: () -> Unit = {}) {
+fun DoctorDetailsScreen(
+    appointmentViewModel: AppointmentViewModel,
+    viewModel: UsersViewModel,
+    doctorId: Int,
+    patientId: Int,
+    onNavigateBack: () -> Unit = {},
+) {
     val doctor by viewModel.selectedDoctor.collectAsState()
     val context = LocalContext.current
     var showSocialMedia by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
-    val calendar = Calendar.getInstance()
-    val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
 
-    // Get dates for appointment buttons
-    val dates = List(3) { index ->
-        val newDate = Calendar.getInstance()
-        newDate.add(Calendar.DAY_OF_YEAR, index)
-        newDate.time
-    }
+    // Add these state variables for appointment booking
+    var selectedDate by remember { mutableStateOf<String?>(null) }
+    var selectedTime by remember { mutableStateOf<String?>(null) }
+    var selectedTimeslotId by remember { mutableStateOf<Int?>(null) }
+
+    // Observe appointment booking result
+    val appointmentBookingResult by appointmentViewModel.appointmentBookingResult.collectAsState()
+    val isLoading by appointmentViewModel.loading.collectAsState()
+    val error by appointmentViewModel.error.collectAsState()
 
     LaunchedEffect(doctorId) {
         viewModel.loadDoctorDetails(doctorId)
+    }
+
+    // Handle booking result
+    LaunchedEffect(appointmentBookingResult) {
+        appointmentBookingResult?.let { result ->
+            if (result.appointmentId > 0) {
+                // Show success message and navigate back or refresh
+                // You can show a snackbar or dialog here
+                onNavigateBack()
+            }
+        }
     }
 
     Scaffold(
@@ -337,84 +365,158 @@ fun DoctorDetailsScreen(viewModel: UsersViewModel, doctorId: Int, onNavigateBack
                                 modifier = Modifier.padding(bottom = 16.dp)
                             )
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                dates.forEachIndexed { index, date ->
-                                    val isSelected = index == 0
-                                    val dateText = when (index) {
-                                        0 -> "Today"
-                                        1 -> "Tomorrow"
-                                        else -> dateFormat.format(date)
-                                    }
+                            // Group timeslots by date
+                            val timeslotsByDate = doc.timeslots
+                                .filter { !it.is_booked } // Only show available slots
+                                .groupBy { it.date }
 
-                                    if (isSelected) {
-                                        Button(
-                                            onClick = { /* Book this slot */ },
-                                            modifier = Modifier.weight(1f),
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = MaterialTheme.colorScheme.primary
-                                            ),
-                                            shape = RoundedCornerShape(12.dp)
-                                        ) {
-                                            Text(dateText)
-                                        }
-                                    } else {
-                                        OutlinedButton(
-                                            onClick = { /* Select this slot */ },
-                                            modifier = Modifier.weight(1f),
-                                            shape = RoundedCornerShape(12.dp),
-                                            border = ButtonDefaults.outlinedButtonBorder
-                                        ) {
-                                            Text(dateText)
+                            // Show dates with available slots
+                            if (timeslotsByDate.isNotEmpty()) {
+                                // Display dates as tabs or buttons
+                                val selectedDateState = remember { mutableStateOf(timeslotsByDate.keys.first()) }
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    timeslotsByDate.keys.forEach { date ->
+                                        val isSelected = date == selectedDateState.value
+                                        val displayDate = formatDateForDisplay(date)
+
+                                        if (isSelected) {
+                                            Button(
+                                                onClick = {
+                                                    selectedDateState.value = date
+                                                    selectedDate = date
+                                                    selectedTime = null // Reset time selection when date changes
+                                                    selectedTimeslotId = null
+                                                },
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = MaterialTheme.colorScheme.primary
+                                                ),
+                                                shape = RoundedCornerShape(12.dp)
+                                            ) {
+                                                Text(displayDate)
+                                            }
+                                        } else {
+                                            OutlinedButton(
+                                                onClick = {
+                                                    selectedDateState.value = date
+                                                    selectedDate = date
+                                                    selectedTime = null // Reset time selection when date changes
+                                                    selectedTimeslotId = null
+                                                },
+                                                shape = RoundedCornerShape(12.dp)
+                                            ) {
+                                                Text(displayDate)
+                                            }
                                         }
                                     }
                                 }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // Display timeslots for selected date
+                                timeslotsByDate[selectedDateState.value]?.let { slots ->
+                                    // Group by morning/afternoon
+                                    val morningSlots = slots.filter { slot ->
+                                        val time = LocalTime.parse(slot.start_time)
+                                        time.isBefore(LocalTime.NOON)
+                                    }
+
+                                    val afternoonSlots = slots.filter { slot ->
+                                        val time = LocalTime.parse(slot.start_time)
+                                        !time.isBefore(LocalTime.NOON)
+                                    }
+
+                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        if (morningSlots.isNotEmpty()) {
+                                            Text(
+                                                text = "Morning",
+                                                style = MaterialTheme.typography.labelLarge,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+
+                                            TimeSlotRow(
+                                                slots = morningSlots,
+                                                selectedTime = selectedTime,
+                                                onSlotSelected = { slot ->
+                                                    selectedTime = slot.start_time
+                                                    selectedTimeslotId = slot.id
+                                                }
+                                            )
+                                        }
+
+                                        if (afternoonSlots.isNotEmpty()) {
+                                            Spacer(modifier = Modifier.height(8.dp))
+
+                                            Text(
+                                                text = "Afternoon",
+                                                style = MaterialTheme.typography.labelLarge,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+
+                                            TimeSlotRow(
+                                                slots = afternoonSlots,
+                                                selectedTime = selectedTime,
+                                                onSlotSelected = { slot ->
+                                                    selectedTime = slot.start_time
+                                                    selectedTimeslotId = slot.id
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            } else {
+                                Text(
+                                    text = "No available timeslots",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            // Time slots
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                // Morning slots
-                                Text(
-                                    text = "Morning",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-
-                                TimeSlotRow(
-                                    slots = listOf("9:00 AM", "10:00 AM", "11:30 AM")
-                                )
-
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                // Afternoon slots
-                                Text(
-                                    text = "Afternoon",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-
-                                TimeSlotRow(
-                                    slots = listOf("1:30 PM", "2:45 PM", "4:15 PM")
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
+                            // Modified Book Appointment Button
                             Button(
-                                onClick = { /* Book appointment */ },
+                                onClick = {
+                                    if (selectedDate != null && selectedTime != null) {
+                                        appointmentViewModel.bookAppointment(
+                                            patientId = patientId,
+                                            doctorId = doctorId,
+                                            date = selectedDate!!,
+                                            time = selectedTime!!
+                                        )
+                                    }
+                                },
                                 modifier = Modifier.fillMaxWidth(),
+                                enabled = selectedDate != null && selectedTime != null && !isLoading,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primary
                                 ),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
+                                if (isLoading) {
+                                    androidx.compose.material3.CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Booking...")
+                                } else {
+                                    Text("Book Appointment")
+                                }
+                            }
+
+                            // Show error if any
+                            error?.let { errorMessage ->
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    "Book Appointment",
-                                    modifier = Modifier.padding(vertical = 4.dp)
+                                    text = errorMessage,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
                                 )
                             }
                         }
@@ -429,6 +531,55 @@ fun DoctorDetailsScreen(viewModel: UsersViewModel, doctorId: Int, onNavigateBack
                 androidx.compose.material3.CircularProgressIndicator(
                     color = MaterialTheme.colorScheme.primary
                 )
+            }
+        }
+    }
+}
+
+// Modified TimeSlotRow to handle actual slot selection with timeslot objects
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun TimeSlotRow(
+    slots: List<Timeslot>, // Change this to accept Timeslot objects instead of strings
+    selectedTime: String? = null,
+    onSlotSelected: (Timeslot) -> Unit = {}
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        slots.forEach { slot ->
+            val timeDisplay = formatTimeForDisplay(slot.start_time)
+            val isSelected = slot.start_time == selectedTime
+
+            Surface(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(40.dp),
+                shape = RoundedCornerShape(8.dp),
+                color = if (isSelected)
+                    AppColors.Blue
+                else
+                    AppColors.Blue,
+                contentColor = if (isSelected)
+                    AppColors.Blue
+                else
+                    AppColors.Blue
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable {
+                            onSlotSelected(slot)
+                        }
+                ) {
+                    Text(
+                        text = timeDisplay,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White
+                    )
+                }
             }
         }
     }
@@ -611,40 +762,74 @@ fun SocialMediaIcon(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
+fun formatDateForDisplay(dateString: String): String {
+    return try {
+        val date = LocalDate.parse(dateString)
+        val today = LocalDate.now()
+        val tomorrow = today.plusDays(1)
+
+        when (date) {
+            today -> "Today"
+            tomorrow -> "Tomorrow"
+            else -> {
+                val formatter = DateTimeFormatter.ofPattern("MMM d")
+                date.format(formatter)
+            }
+        }
+    } catch (e: Exception) {
+        dateString // Fallback to raw string if parsing fails
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun formatTimeForDisplay(timeString: String): String {
+    return try {
+        val time = LocalTime.parse(timeString)
+        val formatter = DateTimeFormatter.ofPattern("h:mm a")
+        time.format(formatter)
+    } catch (e: Exception) {
+        timeString // Fallback to raw string if parsing fails
+    }
+}
+
+// Modified TimeSlotRow to handle actual slot selection
 @Composable
-fun TimeSlotRow(slots: List<String>) {
+fun TimeSlotRow(
+    slots: List<String>,
+    onSlotSelected: (String) -> Unit = {}
+) {
+    val selectedSlot = remember { mutableStateOf<String?>(null) }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        slots.forEachIndexed { index, time ->
-            val isAvailable = index != 1 // For demonstration - second slot is unavailable
+        slots.forEach { time ->
+            val isSelected = time == selectedSlot.value
 
             Surface(
                 modifier = Modifier
                     .weight(1f)
                     .height(40.dp),
                 shape = RoundedCornerShape(8.dp),
-                color = if (isAvailable)
-                    MaterialTheme.colorScheme.surfaceVariant
+                color = if (isSelected)
+                    MaterialTheme.colorScheme.primary
                 else
-                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                contentColor = if (isAvailable)
+                    MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = if (isSelected)
+                    MaterialTheme.colorScheme.onPrimary
+                else
                     MaterialTheme.colorScheme.onSurfaceVariant
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .fillMaxSize()
-                        .then(
-                            if (isAvailable) {
-                                Modifier.clickable { /* Select this time slot */ }
-                            } else {
-                                Modifier
-                            }
-                        )
+                        .clickable {
+                            selectedSlot.value = time
+                            onSlotSelected(time)
+                        }
                 ) {
                     Text(
                         text = time,
