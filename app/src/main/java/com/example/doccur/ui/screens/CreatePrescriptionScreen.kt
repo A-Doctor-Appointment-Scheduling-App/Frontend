@@ -1,5 +1,6 @@
 package com.example.doccur.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,6 +19,8 @@ import com.example.doccur.model.Medication
 import com.example.doccur.ui.components.DocCurButton
 import com.example.doccur.ui.components.LoadingIndicator
 import com.example.doccur.ui.theme.Red
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
 
 import com.example.doccur.util.Resource
 import com.example.doccur.viewmodel.PrescriptionViewModel
@@ -224,15 +227,12 @@ fun CreatePrescriptionScreen(
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
+                val context = LocalContext.current
 
                 // Error Message
                 if (createPrescriptionState is Resource.Error) {
-                    Text(
-                        text = (createPrescriptionState as Resource.Error).message,
-                        color = MaterialTheme.colors.error,
-                        style = MaterialTheme.typography.caption,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
+                    Toast.makeText(context, "Il ya pas de connexion , creation en local ", Toast.LENGTH_LONG).show()
+
                 }
 
                 // Create Prescription Button

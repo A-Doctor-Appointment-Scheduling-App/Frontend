@@ -20,10 +20,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.doccur.api.RetrofitClient
+import com.example.doccur.database.AppDatabase
 import com.example.doccur.repository.AuthRepository
 import com.example.doccur.repository.PrescriptionRepository
 import com.example.doccur.ui.screens.*
 import com.example.doccur.ui.theme.DocCurTheme
+import com.example.doccur.util.ConnectivityUtils
 import com.example.doccur.util.TokenManager
 import com.example.doccur.viewmodel.AuthViewModel
 import com.example.doccur.viewmodel.AuthViewModelFactory
@@ -31,13 +33,15 @@ import com.example.doccur.viewmodel.PrescriptionViewModel
 import com.example.doccur.viewmodel.PrescriptionViewModelFactory
 
 class MainActivity : ComponentActivity() {
+    private lateinit var connectivityUtils: ConnectivityUtils
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // Initialize TokenManager and RetrofitClient
         val tokenManager = TokenManager(this)
 //        RetrofitClient.initialize(tokenManager)
+        connectivityUtils = ConnectivityUtils(this)
 
         setContent {
             DocCurTheme {
@@ -46,13 +50,23 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background
                 ) {
                     val navController = rememberNavController()
-                    
+
                     DocCurApp(
                         navController = navController,
                         tokenManager = tokenManager
                     )
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (connectivityUtils.isNetworkAvailable()) {
+            // Sync prescriptions when connection is restored
+            val prescriptionRepository = PrescriptionRepository(RetrofitClient.apiService, AppDatabase.getDatabase(this).prescriptionDao())
+            val prescriptionViewModel = PrescriptionViewModel(prescriptionRepository)
+            prescriptionViewModel.syncPrescriptions()
         }
     }
 }
@@ -63,22 +77,22 @@ fun DocCurApp(
     tokenManager: TokenManager
 ) {
     val context = LocalContext.current
-    
+
     // Set up AuthRepository
     val authRepository = remember { AuthRepository(RetrofitClient.apiService) }
-    
+
     // Set up PrescriptionRepository
-    val prescriptionRepository = remember { PrescriptionRepository(RetrofitClient.apiService) }
-    
+    val prescriptionRepository = remember { PrescriptionRepository(RetrofitClient.apiService,AppDatabase.getDatabase(context).prescriptionDao()) }
+
     // Create ViewModels
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModelFactory(authRepository, tokenManager)
     )
-    
+
     val prescriptionViewModel: PrescriptionViewModel = viewModel(
         factory = PrescriptionViewModelFactory(prescriptionRepository)
     )
-    
+
     // Define the starting destination based on authentication status
     val startDestination = if (tokenManager.isLoggedIn()) {
         if(tokenManager.isDoctor()){
@@ -89,7 +103,7 @@ fun DocCurApp(
     } else {
         "login"
     }
-    
+
     NavHost(navController = navController, startDestination = startDestination) {
         // Login screen
         composable("login") {
@@ -99,7 +113,7 @@ fun DocCurApp(
                 onLoginSuccess = { navController.navigate("home") { popUpTo("login") { inclusive = true } } }
             )
         }
-        
+
         // Register screen
         composable("register") {
             RegisterScreen(
@@ -111,7 +125,7 @@ fun DocCurApp(
                 }
             )
         }
-        
+
         // Home screen - Would be implemented in a real app
         composable("home") {
             // For this demo, we'll just redirect to the prescription list
@@ -126,7 +140,7 @@ fun DocCurApp(
 
             }
         }
-        
+
         // Prescriptions list screen
         composable("prescriptions") {
             PrescriptionListScreen(
@@ -146,14 +160,14 @@ fun DocCurApp(
 
                 )
         }
-        
+
         // Prescription detail screen
         composable(
             route = "prescriptions/{prescriptionId}",
             arguments = listOf(navArgument("prescriptionId") { type = NavType.IntType })
         ) { backStackEntry ->
             val prescriptionId = backStackEntry.arguments?.getInt("prescriptionId") ?: 0
-            
+
             PrescriptionDetailScreen(
                 viewModel = prescriptionViewModel,
                 prescriptionId = prescriptionId,

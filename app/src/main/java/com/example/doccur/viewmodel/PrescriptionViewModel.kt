@@ -60,7 +60,11 @@ class PrescriptionViewModel(private val repository: PrescriptionRepository) : Vi
         }
     }
 
-
+    fun syncPrescriptions() {
+        viewModelScope.launch {
+            repository.syncUnsyncedPrescriptions()
+        }
+    }
     fun getPrescription(prescriptionId: Int) {
         viewModelScope.launch {
             _prescriptionState.value = Resource.Loading

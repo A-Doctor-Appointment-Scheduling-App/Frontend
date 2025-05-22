@@ -210,7 +210,7 @@ fun AnimatedProfileSection(patientState: Resource<Patient>) {
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                Text("Could not load patient details.", color = ModernErrorColor, textAlign = TextAlign.Center)
+                Text("Could not load patient details.You are offline", textAlign = TextAlign.Center)
             }
             is Resource.Success -> {
                 val patient = state.data
